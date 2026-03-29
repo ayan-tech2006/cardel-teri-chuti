@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARDEL - Materials & Layout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500&family=Inter:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f5f3f0;
+            --bg-secondary: #ebe8e3;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6b6b6b;
+            --accent-gold: #c9a962;
+            --accent-gold-dark: #b8941f;
+            --border-color: #d4d0cb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+            body {
+    font-family: var(--font-sans);
+    background: url('image/background.png') no-repeat center center fixed;
+    background-size: cover;
+    color: var(--color-text);
+    overflow-x: hidden;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+
+
+        /* Navbar */
+            .navbar {
+    position: relative;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  background: url('image/background.png') no-repeat center center fixed;
+    /* backdrop-filter: blur(8px); */
+    z-index: 1000;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+       .nav-inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 1.4rem 3rem 0.8rem 3rem;
+}
+
+/* Logo */
+.nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.35em;
+    font-weight: 500;
+    color: #222;
+    text-align: center;
+}
+
+/* Begin button */
+.nav-right {
+    text-align: right;
+}
+
+.nav-begin {
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: #222;
+    text-transform: uppercase;
+    transition: opacity 0.3s ease;
+}
+
+.nav-begin:hover {
+    opacity: 0.6;
+}
+
+/* Divider line */
+.nav-divider {
+    width: 100%;
+}
+
+.nav-divider hr {
+    width: 100%;
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    margin: 0;
+}
+/* Nav links */
+.nav-links-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 0.8rem 0 1.1rem 0;
+}
+
+.nav-links {
+    display: flex;
+    gap: 3rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-links a {
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #444;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.nav-links a::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #b89a60;
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+.nav-links a:hover {
+    color: #b89a60;
+}
+        /* Main Layout */
+        .materials-page {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 0;
+           margin-top: 50px;
+            min-height: 100vh;
+            padding-top: 150px;
+            padding-bottom: 100px; /* Space for fixed button */
+        }
+
+        /* LEFT PANEL */
+
+.left-panel{
+    /* background:#f6f3ee; */
+    border-right:1px solid #e7e2da;
+    border-top:1px solid #e7e2da;
+    border-bottom:1px solid #e7e2da;
+    padding:40px 32px;
+    position:relative;
+    top:0px;
+    height:calc(100vh - 100px);
+    overflow-y:hidden;
+}
+
+
+/* TITLE */
+
+.panel-title{
+    font-family:'Playfair Display',serif;
+    font-size:18px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#4b4b4b;
+    margin-bottom:28px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding-bottom:14px;
+    border-bottom:1px solid #e7e2da;
+}
+
+
+/* NUMBER BOX */
+
+.panel-title::before{
+    content:'1';
+    width:34px;
+    height:34px;
+    background:#f1ece6;
+    border:1px solid #ddd6cc;
+    border-radius:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    color:#555;
+    box-shadow:0 2px 3px rgba(0,0,0,0.06);
+}
+
+
+/* GROUP */
+
+.control-group{
+    margin-top:26px;
+    margin-bottom:34px;
+}
+
+
+/* LABEL */
+
+.control-label{
+    font-family:'Playfair Display',serif;
+    font-size:20px;
+    color:#404040;
+    margin-bottom:14px;
+    display:block;
+}
+
+
+/* SEGMENTED CONTROL */
+
+.segmented-control{
+    display:flex;
+    border:1px solid #e2ddd6;
+    border-radius:10px;
+    overflow:hidden;
+    background:#f8f6f3;
+    box-shadow:0 2px 4px rgba(0,0,0,0.05);
+}
+
+
+/* BUTTONS */
+
+.segment-btn{
+    flex:1;
+    padding:12px 0;
+    border:none;
+    background:transparent;
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    color:#4a4a4a;
+    cursor:pointer;
+    transition:all .25s ease;
+}
+
+
+/* DIVIDER LINES BETWEEN BUTTONS */
+
+.segment-btn:not(:last-child){
+    border-right:1px solid #e2ddd6;
+}
+
+
+/* ACTIVE STATE */
+
+.segment-btn.active{
+    background:#b8a58d;
+    color:#fff;
+    font-weight:500;
+}
+
+
+/* OPTIONAL HOVER */
+
+.segment-btn:hover:not(.active){
+    background:#eee8e2;
+}
+
+
+        /* Center Panel */
+        .center-panel {
+            padding: 2.5rem 3rem;
+            overflow-y: hidden;
+            height: calc(100vh - 100px);
+            display: flex;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        /* Card Preview Section */
+        .card-preview-section {
+            /* background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%); */
+            border-radius: 5px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            display: flex;
+            margin-top: -40px;
+            flex-direction: column;
+            align-items: center;
+            width: 900px;
+            height: 500px;
+            border: 1px solid var(--border-color);
+        }
+
+        .preview-label {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .live-preview-container {
+            perspective: 1200px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .live-preview-card {
+            width: 100%;
+            aspect-ratio: 1.586;
+            border-radius: 16px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15), 0 10px 30px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .live-preview-card.rotated {
+            transform: rotateY(180deg);
+        }
+
+        .live-preview-card.tilted {
+            transition: transform 0.1s ease-out;
+        }
+
+        .preview-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .preview-face.back {
+            transform: rotateY(180deg);
+        }
+
+        .preview-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .rotate-hint {
+            text-align: center;
+            margin-top: 1.25rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .rotate-hint::before {
+            content: '↻';
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+        }
+
+        /* Section Header */
+        .section-header {
+            margin-bottom: 1.5rem;
+           
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            margin-bottom: 1.25rem;
+            
+        }
+
+        /* Category Tabs */
+        .category-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            
+            flex-wrap: wrap;
+        }
+
+        .category-tab {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            
+        }
+
+        .category-tab:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .category-tab.active {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: white;
+        }
+
+        /* Templates Grid - Compact */
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            width: 900px;
+        }
+
+        .template-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .template-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .template-card.selected {
+            border-color: var(--accent-gold);
+            box-shadow: 0 4px 15px rgba(201, 169, 98, 0.25);
+        }
+
+        .template-preview {
+            width: 100%;
+            aspect-ratio: 1.586;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .template-info {
+            padding: 0.875rem;
+        }
+
+        .template-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 0.15rem;
+        }
+
+        .template-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Materials Section - Compact cards like hero */
+        .materials-section {
+            margin-top: 1.5rem;
+        }
+
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+             width: 900px;
+        }
+
+        .material-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .material-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .material-card.selected {
+            border-color: var(--accent-gold);
+            box-shadow: 0 4px 15px rgba(201, 169, 98, 0.25);
+        }
+
+        .material-preview {
+            width: 100%;
+            aspect-ratio: 1.586;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .material-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--accent-gold);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            z-index: 2;
+        }
+
+        .mini-chip {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 28px;
+            height: 22px;
+            background: linear-gradient(135deg, #d4af37, #b8941f);
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .mini-logo {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 10px;
+            font-style: italic;
+        }
+
+        .mini-number {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            font-size: 8px;
+            letter-spacing: 0.1em;
+        }
+
+        .material-info {
+            padding: 0.875rem;
+        }
+
+        .material-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 0.15rem;
+        }
+
+        .material-specs {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Continue Button - No border/background */
+        .continue-section {
+            position: relative;
+            bottom: -10px;
+            left: 0px;
+            right: 0;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: center;
+            z-index: 100;
+            background: transparent;
+            pointer-events: none;
+        }
+
+        .continue-btn {
+            padding: 1rem 3rem;
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            pointer-events: auto;
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text-primary);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-gold);
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .templates-grid, .materials-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .templates-grid, .materials-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .materials-page {
+                grid-template-columns: 1fr;
+                padding-bottom: 120px;
+            }
+            .left-panel {
+                position: relative;
+                height: auto;
+                top: 0;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .continue-section {
+                left: 0;
+                background: linear-gradient(to top, var(--bg-primary) 50%, transparent);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .templates-grid, .materials-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .center-panel {
+                padding: 1.5rem;
+            }
+        }
+
+
+/* section */
+.done-section{
+padding:70px 0;
+display:flex;
+justify-content:center;
+position: relative;
+left:30px;
+top: -110px;
+}
+
+/* main card */
+.done-card{
+
+width:420px;
+
+/* background:#f6f4f2; */
+
+padding:48px;
+
+border:1px solid #e6e1db;
+
+box-shadow:
+0 1px 0 rgba(0,0,0,0.02),
+0 8px 20px rgba(0,0,0,0.04);
+
+}
+
+/* heading */
+.done-title{
+
+font-family:"Playfair Display",serif;
+
+font-size:36px;
+
+font-weight:400;
+
+color:#4a4a4a;
+
+margin-bottom:18px;
+
+}
+
+/* first paragraph */
+.done-lead{
+
+font-size:14px;
+
+line-height:1.7;
+
+color:#4b4b4b;
+
+margin-bottom:14px;
+
+}
+
+/* second paragraph */
+.done-sub{
+
+font-size:14px;
+
+line-height:1.7;
+
+color:#6a6a6a;
+
+margin-bottom:30px;
+
+}
+
+/* image wrapper */
+.done-image{
+
+margin-bottom:28px;
+
+}
+
+.done-image img{
+
+width:100%;
+
+display:block;
+
+border-radius:4px;
+
+}
+
+/* description */
+.done-desc{
+
+font-size:14px;
+
+line-height:1.7;
+
+color:#5b5b5b;
+
+margin-bottom:30px;
+
+}
+
+/* button */
+.done-btn{
+
+width:100%;
+
+padding:14px 0;
+
+font-family:"Playfair Display",serif;
+
+font-size:14px;
+
+letter-spacing:3px;
+
+color:#ffffff;
+
+border:none;
+
+cursor:pointer;
+
+border-radius:3px;
+
+background:linear-gradient(180deg,#c8a877,#a88757);
+
+box-shadow:0 4px 10px rgba(0,0,0,0.15);
+
+transition:all .25s ease;
+
+}
+
+.done-btn:hover{
+
+opacity:.9;
+
+transform:translateY(-1px);
+
+}
+.whole{
+display:flex;justify-content:center;
+
+}
+
+
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
+
+.lux-footer {
+  /* background: #f4f1ee; */
+  padding: 45px 20px 35px;
+  text-align: center;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.footer-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  letter-spacing: 2px;
+  font-weight: 500;
+  color: #2d2d2d;
+  margin-bottom: 18px;
+}
+
+.footer-nav {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.footer-nav a {
+  text-decoration: none;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #555;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.footer-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0%;
+  height: 1px;
+  background: #2d2d2d;
+  transition: width 0.3s ease;
+}
+
+.footer-nav a:hover {
+  color: #2d2d2d;
+}
+
+.footer-nav a:hover::after {
+  width: 100%;
+}
+
+.footer-social {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px;
+  letter-spacing: 1.2px;
+}
+
+.footer-social a {
+  text-decoration: none;
+  color: #777;
+  transition: color 0.3s ease;
+}
+
+.footer-social a:hover {
+  color: #000;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer-nav {
+    gap: 18px;
+  }
+
+  .footer-logo {
+    font-size: 26px;
+  }
+}
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+        <div class="nav-left"></div>
+
+        <div class="nav-center">
+            <div class="nav-logo">CARDEL</div>
+        </div>
+
+        <div class="nav-right">
+    <a href="order.html" class="nav-begin" onclick="saveToStorage()">Order →</a>
+</div>
+
+    </div>
+
+    <!-- Line below logo -->
+    <div class="nav-divider">
+        <hr>
+    </div>
+
+    <div class="nav-links-wrapper">
+        <ul class="nav-links">
+            <li><a href="#">Design</a></li>
+            <li><a href="#">Materials</a></li>
+            <li><a href="#">Atelier</a></li>
+            <li><a href="order.html" onclick="saveToStorage()">Order</a></li>
+            <li><a href="#">Help</a></li>
+        </ul>
+    </div>
+</nav>
+
+    <!-- Main Content -->
+    <div class="materials-page" style=" position: relative;
+            top: -150px;">
+        <!-- Left Panel: Text Layout Controls -->
+        <aside class="left-panel">
+            <div class="panel-title">Text Layout</div>
+            
+            <div class="control-group">
+                <label class="control-label">Name position</label>
+                <div class="segmented-control">
+                    <button class="segment-btn active" onclick="setNamePosition('left', this)">Left</button>
+                    <button class="segment-btn" onclick="setNamePosition('center', this)">Center</button>
+                    <button class="segment-btn" onclick="setNamePosition('right', this)">Right</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Number position</label>
+                <div class="segmented-control">
+                    <button class="segment-btn" onclick="setNumberPosition('left', this)">Left</button>
+                    <button class="segment-btn active" onclick="setNumberPosition('center', this)">Center</button>
+                    <button class="segment-btn" onclick="setNumberPosition('right', this)">Right</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Template Style</label>
+                <div class="segmented-control">
+                    <button class="segment-btn active" onclick="setTemplateStyle('classic', this)">Classic</button>
+                    <button class="segment-btn" onclick="setTemplateStyle('modern', this)">Modern</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Panel: Card Preview + Templates + Materials -->
+        <main class="center-panel" >
+            <!-- Live Card Preview -->
+             <div class="whole" >
+            <div class="card-preview-section">
+                <div class="preview-label">Live Preview • Click to Flip</div>
+                <div class="live-preview-container" id="previewContainer">
+                    <div class="live-preview-card" id="livePreviewCard">
+                        <div class="preview-face front">
+                            <canvas id="previewCanvasFront" class="preview-canvas" width="400" height="252"></canvas>
+                        </div>
+                        <div class="preview-face back">
+                            <canvas id="previewCanvasBack" class="preview-canvas" width="400" height="252"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <p class="rotate-hint">Click card to rotate • Hover to tilt</p>
+                    <div class="continue-section">
+        <button class="continue-btn" onclick="saveAndProceed()">Continue to Order →</button>
+    </div>
+            </div>
+       <section class="done-section">
+
+        <div class="done-card">
+
+      <h2 class="done-title">Done For You</h2>
+
+      <p class="done-lead">
+        Skip the entire design process and have our experts create your card for you.
+      </p>
+
+      <p class="done-sub">
+        Let our designers craft a unique, tailored card that exudes elegance and sophistication.
+      </p>
+
+      <div class="done-image">
+        <img src="image/card.png" alt="">
+      </div>
+      <button class="done-btn">WORK WITH OUR ATELIEAR</button>
+  
+      </div>
+
+        </section>
+ </main>
+        
+        </div>
+          <div class="bottom-container" style="position: relative; top: -530px; left: 30px; height:920px; ">
+            <!-- Templates Section -->
+            <div class="section-header">
+                <h2 class="section-title">Pre-Built Templates</h2>
+                <div class="category-tabs">
+                    <button class="category-tab active" onclick="filterTemplates('all', this)">All</button>
+                    <button class="category-tab" onclick="filterTemplates('editorial', this)">Editorial</button>
+                    <button class="category-tab" onclick="filterTemplates('corporate', this)">Corporate</button>
+                    <button class="category-tab" onclick="filterTemplates('minimal', this)">Minimal</button>
+                </div>
+            </div>
+
+            <div class="templates-grid" id="templatesGrid">
+                <!-- Templates populated by JS -->
+            </div>
+
+            <!-- Materials Section -->
+            <div class="materials-section">
+                <div class="section-header" style="margin-bottom: 1rem;">
+                    <h2 class="section-title">Select Material</h2>
+                    <div class="category-tabs">
+                        <button class="category-tab active" onclick="filterMaterials('metal', this)">Metal</button>
+                        <button class="category-tab" onclick="filterMaterials('wood', this)">Wood</button>
+                        <button class="category-tab" onclick="filterMaterials('carbon', this)">Carbon</button>
+                        <button class="category-tab" onclick="filterMaterials('limited', this)">Limited</button>
+                    </div>
+                </div>
+
+                <div class="materials-grid" id="materialsGrid">
+                    <!-- Materials populated by JS -->
+                </div>
+            </div>
+       
+    </div>
+</div>
+    <!-- Continue Button -->
+ <!-- Luxury Footer -->
+    <footer class="lux-footer">
+        <div class="footer-inner">
+            <div class="footer-logo">CARDEL</div>
+
+            <nav class="footer-nav">
+                <a href="#hero">DESIGN</a>
+                <a href="#materials">MATERIALS</a>
+                <a href="#atelier">ATELIER</a>
+                <a href="#order">ORDER</a>
+                <a href="#help">HELP</a>
+            </nav>
+
+            <div class="footer-social">
+                <a href="#" aria-label="Instagram">Instagram</a>
+                <a href="#" aria-label="Facebook">Facebook</a>
+                <a href="#" aria-label="Pinterest">Pinterest</a>
+            </div>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="shared.js"></script>
+    <script>
+        // Layout state
+        const layoutState = {
+            namePosition: 'left',
+            numberPosition: 'center',
+            templateStyle: 'classic',
+            selectedTemplate: 'editorial',
+            isFlipped: false
+        };
+
+        // Template definitions
+        const templates = [
+            { id: 'editorial', name: 'Editorial', desc: 'Classic elegance', category: 'editorial' },
+            { id: 'corporate', name: 'Corporate', desc: 'Professional', category: 'corporate' },
+            { id: 'minimal', name: 'Minimal', desc: 'Clean & simple', category: 'minimal' },
+            { id: 'luxury', name: 'Luxury', desc: 'Bold statement', category: 'editorial' }
+        ];
+
+        // Initialize
+        window.addEventListener('load', () => {
+            loadFromStorage();
+            initPage();
+        });
+
+        function initPage() {
+            renderTemplates();
+            loadMaterialsGrid('metal');
+            updatePreviewCard();
+            setupCardInteractions();
+        }
+
+        // Render template thumbnails
+        function renderTemplates(filter = 'all') {
+            const grid = document.getElementById('templatesGrid');
+            grid.innerHTML = '';
+
+            const filteredTemplates = filter === 'all' 
+                ? templates 
+                : templates.filter(t => t.category === filter);
+
+            filteredTemplates.forEach((temp, i) => {
+                const card = document.createElement('div');
+                card.className = `template-card ${temp.id === layoutState.selectedTemplate ? 'selected' : ''}`;
+                card.onclick = () => selectTemplate(temp.id, card);
+                
+                const isDark = temp.id !== 'minimal';
+                const textColor = isDark ? '#c9a962' : '#1a1a1a';
+                const bgColor = temp.id === 'minimal' ? '#f5f5f5' : (temp.id === 'corporate' ? '#1e3a5f' : '#1a1a1a');
+                
+                card.innerHTML = `
+                    <div class="template-preview" style="background: ${bgColor};">
+                        <div class="mini-chip"></div>
+                        <div class="mini-logo" style="color: ${textColor};">CARDEL</div>
+                        <div class="mini-number" style="color: ${isDark ? '#aaa' : '#666'};">•••• 0000</div>
+                    </div>
+                    <div class="template-info">
+                        <h3 class="template-name">${temp.name}</h3>
+                        <p class="template-desc">${temp.desc}</p>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function selectTemplate(templateId, element) {
+            layoutState.selectedTemplate = templateId;
+            
+            // Update visual selection
+            document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            // Update preview
+            updatePreviewCard();
+            
+            showToast(`${templates.find(t => t.id === templateId).name} template selected`);
+        }
+
+        function filterTemplates(category, btn) {
+            // Update active tab
+            document.querySelectorAll('.section-header .category-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Re-render with filter
+            renderTemplates(category);
+        }
+
+        // Load materials grid - Compact cards
+        function loadMaterialsGrid(category) {
+            const grid = document.getElementById('materialsGrid');
+            grid.innerHTML = '';
+            
+            state.materials[category].forEach((mat, index) => {
+                const card = document.createElement('div');
+                card.className = `material-card ${mat.id === state.cardData.material ? 'selected' : ''}`;
+                card.onclick = () => selectMaterialCard(mat.id, card);
+                
+                const isDark = isDarkMaterial(mat.id);
+                const textColor = isDark ? '#c9a962' : '#1a1a1a';
+                const numberColor = isDark ? '#aaa' : '#666';
+                
+                card.innerHTML = `
+                    <div class="material-preview" style="background: ${mat.color};">
+                        ${mat.badge ? `<span class="material-badge">${mat.badge}</span>` : ''}
+                        <div class="mini-chip"></div>
+                        <div class="mini-logo" style="color: ${textColor};">CARDEL</div>
+                        <div class="mini-number" style="color: ${numberColor};">•••• 0000</div>
+                    </div>
+                    <div class="material-info">
+                        <h3 class="material-name">${mat.name}</h3>
+                        <p class="material-specs">${mat.thickness} • ${mat.weight}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function selectMaterialCard(materialId, element) {
+            state.cardData.material = materialId;
+            document.querySelectorAll('.material-card').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+            saveToStorage();
+            updatePreviewCard();
+            renderTemplates(); // Re-render templates with new material colors
+            showToast(`${getCurrentMaterial().name} selected`);
+        }
+
+        function filterMaterials(category, btn) {
+            document.querySelectorAll('.materials-section .category-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            loadMaterialsGrid(category);
+        }
+
+        // Layout controls
+        function setNamePosition(pos, btn) {
+            layoutState.namePosition = pos;
+            btn.parentElement.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updatePreviewCard();
+        }
+
+        function setNumberPosition(pos, btn) {
+            layoutState.numberPosition = pos;
+            btn.parentElement.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updatePreviewCard();
+        }
+
+        function setTemplateStyle(style, btn) {
+            layoutState.templateStyle = style;
+            btn.parentElement.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updatePreviewCard();
+        }
+
+        // Card interactions
+        function setupCardInteractions() {
+            const card = document.getElementById('livePreviewCard');
+            const container = document.getElementById('previewContainer');
+            
+            // Click to flip
+            card.addEventListener('click', () => {
+                layoutState.isFlipped = !layoutState.isFlipped;
+                card.classList.toggle('rotated', layoutState.isFlipped);
+            });
+            
+            // Tilt on hover
+            let currentX = 0, currentY = 0;
+            let targetX = 0, targetY = 0;
+            let isHovering = false;
+            let rafId = null;
+            
+            container.addEventListener('mouseenter', () => {
+                isHovering = true;
+                card.classList.add('tilted');
+                if (!rafId) animate();
+            });
+            
+            container.addEventListener('mousemove', (e) => {
+                if (!isHovering) return;
+                
+                const rect = container.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+                
+                targetX = y * -10;
+                targetY = x * 10;
+            });
+            
+            container.addEventListener('mouseleave', () => {
+                isHovering = false;
+                targetX = 0;
+                targetY = 0;
+                card.classList.remove('tilted');
+            });
+            
+            function animate() {
+                if (!isHovering && Math.abs(targetX - currentX) < 0.01 && Math.abs(targetY - currentY) < 0.01) {
+                    rafId = null;
+                    return;
+                }
+                
+                currentX += (targetX - currentX) * 0.1;
+                currentY += (targetY - currentY) * 0.1;
+                
+                if (!layoutState.isFlipped) {
+                    card.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
+                } else {
+                    card.style.transform = `rotateY(180deg) rotateX(${-currentX}deg)`;
+                }
+                
+                rafId = requestAnimationFrame(animate);
+            }
+        }
+
+        // Update preview card
+        function updatePreviewCard() {
+            drawCard('previewCanvasFront', 'front', 400, 252);
+            drawCard('previewCanvasBack', 'back', 400, 252);
+        }
+
+        // Override drawCard for layout positioning
+        const originalDrawCard = drawCard;
+        drawCard = function(canvasId, side, w, h) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            ctx.scale(dpr, dpr);
+            
+            const mat = getCurrentMaterial();
+            const isDark = isDarkMaterial(mat.id);
+            
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            
+            // Draw background
+            drawBackground(ctx, w, h, mat);
+            
+            // Draw content with layout
+            if (side === 'front') {
+                drawLayoutFront(ctx, w, h, mat, isDark);
+            } else {
+                drawLayoutBack(ctx, w, h, mat, isDark);
+            }
+            
+            // Border
+            const borderGrad = ctx.createLinearGradient(0, 0, w, h);
+            borderGrad.addColorStop(0, 'rgba(255,255,255,0.35)');
+            borderGrad.addColorStop(0.5, 'rgba(255,255,255,0)');
+            borderGrad.addColorStop(1, 'rgba(255,255,255,0.15)');
+            ctx.strokeStyle = borderGrad;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(1, 1, w - 2, h - 2);
+        };
+
+        function drawLayoutFront(ctx, w, h, mat, isDark) {
+            const scale = w / 600;
+            const textColor = isDark ? '#c9a962' : '#1a1a1a';
+            const subTextColor = isDark ? '#ffffff' : '#555555';
+            const accentColor = '#c9a962';
+            
+            // Calculate positions
+            let nameX, numX, align;
+            const padding = 45 * scale;
+            
+            switch(layoutState.namePosition) {
+                case 'left': nameX = padding; align = 'left'; break;
+                case 'center': nameX = w / 2; align = 'center'; break;
+                case 'right': nameX = w - padding; align = 'right'; break;
+            }
+            
+            switch(layoutState.numberPosition) {
+                case 'left': numX = padding; break;
+                case 'center': numX = w / 2; break;
+                case 'right': numX = w - padding; break;
+            }
+            
+            // Corner accents
+            drawCornerAccent(ctx, 22 * scale, 22 * scale, 16 * scale, accentColor, true);
+            drawCornerAccent(ctx, w - 22 * scale, h - 22 * scale, 16 * scale, accentColor, false);
+            
+            // Name
+            ctx.save();
+            ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.1)';
+            ctx.shadowBlur = 3 * scale;
+            ctx.font = `italic ${34 * scale}px "Cormorant Garamond"`;
+            ctx.fillStyle = textColor;
+            ctx.textAlign = align;
+            ctx.fillText(state.cardData.name || 'Your Name', nameX, h/2 - 12 * scale);
+            ctx.restore();
+            
+            // Title
+            ctx.font = `300 ${11 * scale}px Inter`;
+            ctx.fillStyle = subTextColor;
+            ctx.fillText(state.cardData.title || 'Creative Director', nameX, h/2 + 16 * scale);
+            
+            // Divider
+            const divWidth = 60 * scale;
+            let divX;
+            if (layoutState.namePosition === 'center') divX = w/2 - divWidth/2;
+            else if (layoutState.namePosition === 'right') divX = nameX - divWidth;
+            else divX = nameX;
+            
+            const divGrad = ctx.createLinearGradient(divX, 0, divX + divWidth, 0);
+            divGrad.addColorStop(0, accentColor);
+            divGrad.addColorStop(1, 'rgba(201,169,98,0.2)');
+            ctx.strokeStyle = divGrad;
+            ctx.lineWidth = 1.5 * scale;
+            ctx.beginPath();
+            ctx.moveTo(divX, h/2 + 34 * scale);
+            ctx.lineTo(divX + divWidth, h/2 + 34 * scale);
+            ctx.stroke();
+            
+            // Contact info
+            const contactY = h - 50 * scale;
+            ctx.save();
+            ctx.font = `400 ${10 * scale}px Inter`;
+            ctx.fillStyle = textColor;
+            ctx.textAlign = layoutState.numberPosition === 'center' ? 'center' : (layoutState.numberPosition === 'right' ? 'right' : 'left');
+            ctx.fillText(state.cardData.number || '+1 (555) 000-0000', numX, contactY);
+            
+            ctx.font = `300 ${9 * scale}px Inter`;
+            ctx.fillStyle = subTextColor;
+            ctx.fillText(state.cardData.email || 'hello@cardel.com', numX, contactY + 18 * scale);
+            ctx.restore();
+            
+            // NFC Icon (top right)
+            const iconColor = isDark ? '#c9a962' : '#1a1a1a';
+            const iconSize = 28 * scale;
+            const nfcX = w - 60 * scale;
+            const nfcY = 38 * scale;
+            
+            ctx.save();
+            ctx.strokeStyle = iconColor;
+            ctx.lineWidth = iconSize * 0.14;
+            ctx.lineCap = 'round';
+            ctx.strokeRect(nfcX - iconSize*0.35, nfcY - iconSize*0.35, iconSize*0.7, iconSize*0.7);
+            for(let i = 1; i <= 3; i++){
+                let r = iconSize*0.32 + i*iconSize*0.10;
+                ctx.beginPath();
+                ctx.arc(nfcX + iconSize*0.08, nfcY, r, Math.PI*1.05, Math.PI*1.95, false);
+                ctx.stroke();
+            }
+            ctx.font = `500 ${9 * scale}px Inter`;
+            ctx.fillStyle = iconColor;
+            ctx.textAlign = 'center';
+            ctx.fillText("NFC", nfcX, nfcY + iconSize*0.45);
+            ctx.restore();
+        }
+
+        function drawLayoutBack(ctx, w, h, mat, isDark) {
+            const scale = w / 600;
+            const accentColor = '#c9a962';
+            const centerX = w / 2;
+            const centerY = h / 2;
+            
+            // Rings
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 65 * scale, 0, Math.PI * 2);
+            ctx.strokeStyle = accentColor;
+            ctx.lineWidth = 1 * scale;
+            ctx.globalAlpha = 0.4;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 48 * scale, 0, Math.PI * 2);
+            ctx.lineWidth = 0.5 * scale;
+            ctx.globalAlpha = 0.2;
+            ctx.stroke();
+            ctx.restore();
+            
+            // Monogram
+            ctx.font = `300 ${40 * scale}px "Cormorant Garamond"`;
+            ctx.fillStyle = accentColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('C', centerX, centerY);
+            
+            // Tagline
+            ctx.font = `italic ${10 * scale}px "Cormorant Garamond"`;
+            ctx.fillStyle = isDark ? '#aaaaaa' : '#666666';
+            ctx.fillText('Bespoke Identity', centerX, centerY + 42 * scale);
+            
+            // Corner accents
+            drawCornerAccent(ctx, w - 22 * scale, 22 * scale, 16 * scale, accentColor, true, true);
+            drawCornerAccent(ctx, 22 * scale, h - 22 * scale, 16 * scale, accentColor, false, true);
+        }
+
+        function saveAndProceed() {
+            saveToStorage();
+            window.location.href = 'order.html';
+        }
+    </script>
+</body>
+</html>
