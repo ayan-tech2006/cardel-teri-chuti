@@ -2000,6 +2000,23 @@ body {
             z-index: 1;
         }
 
+        .checklist-container.guidance-glow {
+            box-shadow: 0 0 30px rgba(201, 169, 98, 0.25);
+            border: 1px solid rgba(201, 169, 98, 0.4);
+            animation: sectionPulse 2s infinite alternate ease-in-out;
+        }
+
+        @keyframes sectionPulse {
+            from { 
+                box-shadow: 0 0 15px rgba(201, 169, 98, 0.15);
+                border-color: rgba(201, 169, 98, 0.2);
+            }
+            to { 
+                box-shadow: 0 0 40px rgba(201, 169, 98, 0.4);
+                border-color: rgba(201, 169, 98, 0.6);
+            }
+        }
+
         .about-container {
             position: relative;
             z-index: 10;

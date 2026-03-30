@@ -78,6 +78,10 @@ function loadFromStorage() {
      function syncFromSidebar(field, value) {
          state.cardData[field] = value;
          updateChecklistState(); // instant — no canvas, just class changes
+        
+        // Remove guidance glow from sidebar on first typing
+        const checklist = document.querySelector('.checklist-container');
+        if (checklist) checklist.classList.remove('guidance-glow');
 
          // Debounce the expensive canvas redraw by 120ms
          clearTimeout(_syncDebounce);
@@ -127,8 +131,10 @@ function toggleCardZoom(event) {
     // Remove guidance elements on interaction
     const fingerGuide = document.getElementById('fingerGuide');
     const cardContainer = document.getElementById('cardContainer3d');
+    const checklist = document.querySelector('.checklist-container');
     if (fingerGuide) fingerGuide.classList.add('hidden');
     if (cardContainer) cardContainer.classList.add('interacted');
+    if (checklist) checklist.classList.remove('guidance-glow');
 
     // Hide click guide on first interaction
     const guide = document.getElementById('cardClickGuide');
