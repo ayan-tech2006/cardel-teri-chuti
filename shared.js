@@ -17,7 +17,7 @@ function loadFromStorage() {
         title: '',
         number: '',
         email: '',
-        material: 'black-metal'
+        material: 'silver-metal'
     },
     activeHotspot: null,
     isZoomed: false,
@@ -124,6 +124,12 @@ function loadFromStorage() {
      // Card Zoom Functionality with GSAP
 // Hide the guide tooltip once the card is tapped once
 function toggleCardZoom(event) {
+    // Remove guidance elements on interaction
+    const fingerGuide = document.getElementById('fingerGuide');
+    const cardContainer = document.getElementById('cardContainer3d');
+    if (fingerGuide) fingerGuide.classList.add('hidden');
+    if (cardContainer) cardContainer.classList.add('interacted');
+
     // Hide click guide on first interaction
     const guide = document.getElementById('cardClickGuide');
     if (guide) guide.classList.add('hidden');
@@ -586,20 +592,22 @@ document.addEventListener('keydown', (e) => {
     let currentRotateY = 0;
     let targetRotateX = 0;
     let targetRotateY = 0;
+    let currentScale = 1;
+    let targetScale = 1;
+
     let rafId = null;
     let isHovering = false;
     
-    // Smooth animation loop
     function animate() {
-        // Smooth interpolation (0.08 = slow, smooth follow)
-        currentRotateX += (targetRotateX - currentRotateX) * 0.04;
-        currentRotateY += (targetRotateY - currentRotateY) * 0.04;
+        // Snappier interpolation (0.07 for more responsive feel)
+        currentRotateX += (targetRotateX - currentRotateX) * 0.07;
+        currentRotateY += (targetRotateY - currentRotateY) * 0.07;
+        currentScale += (targetScale - currentScale) * 0.07;
         
-        // Apply transform
-        wrapper.style.transform = `perspective(1500px) rotateX(${currentRotateX}deg) rotateY(${currentRotateY}deg)`;
+        // Apply transform with perspective, rotation and scaling
+        wrapper.style.transform = `perspective(1200px) rotateX(${currentRotateX}deg) rotateY(${currentRotateY}deg) scale3d(${currentScale}, ${currentScale}, ${currentScale})`;
         
-        // Continue animation if still hovering or not settled
-        if (isHovering || Math.abs(targetRotateX - currentRotateX) > 0.01 || Math.abs(targetRotateY - currentRotateY) > 0.01) {
+        if (isHovering || Math.abs(targetRotateX - currentRotateX) > 0.01 || Math.abs(targetRotateY - currentRotateY) > 0.01 || Math.abs(targetScale - currentScale) > 0.001) {
             rafId = requestAnimationFrame(animate);
         } else {
             rafId = null;
@@ -616,9 +624,10 @@ document.addEventListener('keydown', (e) => {
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
         
-        // Much subtler tilt (5 degrees max instead of 15)
-        targetRotateX = (y - centerY) / centerY * -5;
-        targetRotateY = (x - centerX) / centerX * 5;
+        // Increased sensitivity (10 degrees max)
+        targetRotateX = (y - centerY) / centerY * -10;
+        targetRotateY = (x - centerX) / centerX * 10;
+        targetScale = 1.06; // "Pop" on hover
         
         if (!isHovering) {
             isHovering = true;
@@ -630,7 +639,7 @@ document.addEventListener('keydown', (e) => {
         isHovering = false;
         targetRotateX = 0;
         targetRotateY = 0;
-        // Animation continues until it settles back to 0
+        targetScale = 1.0;
         if (!rafId) animate();
     });
 }

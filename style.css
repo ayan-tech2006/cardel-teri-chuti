@@ -465,72 +465,77 @@ body {
 
 
 
-        /* ---- Card Click Guide (Prominent Version) ---- */
-        .card-click-guide {
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            perspective: 1000px;
+        /* ---- Visual Guidance (Finger & Glow) ---- */
+        .finger-guide {
+            position: absolute;
+            top: -20px;
+            left: -40px;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 100;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            animation: fingerPoint 1.5s infinite ease-in-out;
+            filter: drop-shadow(0 2px 10px rgba(0,0,0,0.3));
         }
 
-        .guide-inner {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0.7rem 1.4rem;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid #c9a962;
-            border-radius: 50px;
-            box-shadow: 0 10px 30px rgba(201, 169, 98, 0.2), 
-                        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #1a1a1a;
-            position: relative;
-            animation: guideFloat 3s ease-in-out infinite;
-        }
-
-        .card-click-guide.hidden {
+        .finger-guide.hidden {
             opacity: 0;
-            transform: translateY(-20px) scale(0.9);
+            transform: scale(0.5) translate(-20px, -20px);
             pointer-events: none;
         }
 
-        .guide-pulse {
-            width: 10px;
-            height: 10px;
-            background: #c9a962;
-            border-radius: 50%;
-            position: relative;
+        @keyframes fingerPoint {
+            0%, 100% { transform: translate(0, 0) rotate(5deg); }
+            50% { transform: translate(15px, 15px) rotate(15deg); }
         }
 
-        .guide-pulse::after {
+        .card-ambient-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 140%;
+            height: 140%;
+            background: radial-gradient(circle, rgba(201, 169, 98, 0.25) 0%, transparent 65%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+            animation: ambientPulse 4s infinite ease-in-out;
+        }
+
+        .card-container-3d.interacted .card-ambient-glow {
+            opacity: 0;
+        }
+
+        @keyframes ambientPulse {
+            0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+        }
+
+        /* Metallic Shimmer Light Catch */
+        .card-face-3d::after {
             content: '';
             position: absolute;
-            inset: -4px;
-            border-radius: 50%;
-            border: 2px solid #c9a962;
-            animation: pulseRing 1.8s ease-out infinite;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: skewX(-25deg);
+            transition: 0.2s;
+            pointer-events: none;
         }
 
-        .guide-arrow {
-            display: inline-block;
-            font-size: 1.1rem;
-            color: #c9a962;
-            animation: arrowBounce 1.5s ease-in-out infinite;
+        .card-container-3d:hover .card-face-3d::after {
+            left: 150%;
+            transition: 1.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes guideFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
 
         @keyframes arrowBounce {
             0%, 100% { transform: translateY(0); }
