@@ -52,7 +52,7 @@ html.lenis {
 
 body {
     font-family: var(--font-sans);
-       background-color: #f8f8f8; /* keep rest of page white */
+    background-color: transparent; 
     color: var(--color-text);
     overflow-x: hidden;
     line-height: 1.6;
@@ -66,7 +66,7 @@ body {
 }
 
 .header video {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     min-width: 100%;

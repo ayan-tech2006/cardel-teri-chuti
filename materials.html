@@ -28,8 +28,7 @@
 
             body {
     font-family: var(--font-sans);
-    background: url('image/background.png') no-repeat center center fixed;
-    background-size: cover;
+    background: transparent;
     color: var(--color-text);
     overflow-x: hidden;
     overflow-y: auto;
@@ -47,41 +46,6 @@
             padding-top: 150px;
             padding-bottom: 100px; /* Space for fixed button */
         }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <!-- Background Video -->
-        <video autoplay muted loop playsinline>
-            <source src="image/Untitled design (7).mp4" type="video/mp4">
-        </video>
-    </div>
-
-    <!-- Same navbar -->
-    <nav class="navbar" id="navbar">
-        <div class="nav-inner">
-            <div class="nav-left"></div>
-            <div class="nav-center">
-               <div class="nav-logo">
-                    <video autoplay muted loop playsinline>
-                        <source src="image/ecea5294010946da9c85d9af2cae86da.webm" type="video/mp4">
-                    </video>
-                </div>
-            </div>
-            <div class="nav-right">
-                <a href="order.html" class="nav-begin">Order →</a>
-            </div>
-        </div>
-        <div class="nav-divider"><hr></div>
-        <div class="nav-links-wrapper">
-            <ul class="nav-links">
-                <li><a href="index.html">Design</a></li>
-                <li><a href="materials.html" class="active">Materials</a></li>
-                <li><a href="#">Atelier</a></li>
-                <li><a href="order.html">Order</a></li>
-            </ul>
-        </div>
-    </nav>
 
         /* LEFT PANEL */
 
@@ -845,35 +809,38 @@ display:flex;justify-content:center;
     </style>
 </head>
 <body>
+    <div class="header">
+        <!-- Background Video -->
+        <video autoplay muted loop playsinline>
+            <source src="image/Untitled design (7).mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Same navbar -->
     <nav class="navbar" id="navbar">
-    <div class="nav-inner">
-        <div class="nav-left"></div>
-
-        <div class="nav-center">
-            <div class="nav-logo">CARDEL</div>
+        <div class="nav-inner">
+            <div class="nav-left"></div>
+            <div class="nav-center">
+               <div class="nav-logo">
+                    <video autoplay muted loop playsinline>
+                        <source src="image/ecea5294010946da9c85d9af2cae86da.webm" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+            <div class="nav-right">
+                <a href="order.html" class="nav-begin">Order →</a>
+            </div>
         </div>
-
-        <div class="nav-right">
-    <a href="order.html" class="nav-begin" onclick="saveToStorage()">Order →</a>
-</div>
-
-    </div>
-
-    <!-- Line below logo -->
-    <div class="nav-divider">
-        <hr>
-    </div>
-
-    <div class="nav-links-wrapper">
-        <ul class="nav-links">
-            <li><a href="#">Design</a></li>
-            <li><a href="#">Materials</a></li>
-            <li><a href="#">Atelier</a></li>
-            <li><a href="order.html" onclick="saveToStorage()">Order</a></li>
-            <li><a href="#">Help</a></li>
-        </ul>
-    </div>
-</nav>
+        <div class="nav-divider"><hr></div>
+        <div class="nav-links-wrapper">
+            <ul class="nav-links">
+                <li><a href="index.html">Design</a></li>
+                <li><a href="materials.html" class="active">Materials</a></li>
+                <li><a href="#">Atelier</a></li>
+                <li><a href="order.html">Order</a></li>
+            </ul>
+        </div>
+    </nav>
 
     <!-- Main Content -->
     <div class="materials-page" style=" position: relative;
