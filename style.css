@@ -424,7 +424,7 @@ body {
         .check-input-wrap {
             flex: 1;
             position: relative;
-            margin-top: 10px;
+            margin-top: 4px;
             display: flex;
             align-items: center;
         }
@@ -449,14 +449,10 @@ body {
             font-family: inherit;
             font-size: 14px;
             color: #1a1a1a;
-            padding: 12px 0 6px;
+            padding: 8px 0 4px;
             outline: none;
             transition: border-bottom-color 0.2s ease;
             display: block;
-        }
-
-        .check-field:focus {
-            border-bottom-color: #c9a962;
         }
 
         /* Hide label on focus or when typing */
@@ -465,6 +461,7 @@ body {
             opacity: 0;
             visibility: hidden;
         }
+
 
 
 
