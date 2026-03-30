@@ -445,13 +445,12 @@ body {
             width: 100%;
             background: transparent;
             border: none;
-            border-bottom: 1.5px solid #e0dbd8;
+            border-bottom: none;
             font-family: inherit;
             font-size: 14px;
             color: #1a1a1a;
             padding: 8px 0 4px;
             outline: none;
-            transition: border-bottom-color 0.2s ease;
             display: block;
         }
 
