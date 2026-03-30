@@ -420,21 +420,25 @@ body {
             box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
 
-        /* ---- Sidebar Identity Inputs ---- */
+        /* ---- Sidebar Identity Inputs (Modern Floating Labels) ---- */
         .check-input-wrap {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            position: relative;
+            margin-top: 15px; /* Space for floated label */
         }
 
         .check-label {
+            position: absolute;
+            left: 0;
+            top: 5px;
             font-family: Helvetica, Arial, sans-serif;
-            font-size: 10px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.05em;
             color: #aaa;
             pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .check-field {
@@ -445,19 +449,25 @@ body {
             font-family: Helvetica, Arial, sans-serif;
             font-size: 14px;
             color: #1a1a1a;
-            padding: 3px 0;
+            padding: 8px 0 4px;
             outline: none;
-            transition: border-color 0.2s ease;
+            transition: border-bottom-color 0.2s ease;
+        }
+
+        /* Float logic */
+        .check-field:focus ~ .check-label,
+        .check-field:not(:placeholder-shown) ~ .check-label {
+            top: -14px;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #c9a962;
         }
 
         .check-field:focus {
             border-bottom-color: #c9a962;
         }
 
-        .check-field::placeholder {
-            color: #c5c0bc;
-            font-size: 12px;
-        }
 
         /* ---- Card Click Guide (Prominent Version) ---- */
         .card-click-guide {
@@ -608,6 +618,19 @@ body {
     /* Hardware acceleration */
     transform: translate3d(0, 0, 0);
 }
+
+/* Golden interaction highlight */
+.card-face-3d.golden-glow {
+    animation: goldGlowPulse 2.5s ease-in-out infinite;
+    border: 1px solid rgba(201, 169, 98, 0.4);
+}
+
+@keyframes goldGlowPulse {
+    0% { box-shadow: 0 30px 80px rgba(0,0,0,0.25), 0 0 15px rgba(201, 169, 98, 0.4); }
+    50% { box-shadow: 0 30px 80px rgba(0,0,0,0.25), 0 0 45px rgba(201, 169, 98, 0.8); }
+    100% { box-shadow: 0 30px 80px rgba(0,0,0,0.25), 0 0 15px rgba(201, 169, 98, 0.4); }
+}
+
 
         .card-face-3d.back {
             transform: rotateY(180deg);

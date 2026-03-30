@@ -128,6 +128,9 @@ function toggleCardZoom(event) {
     const guide = document.getElementById('cardClickGuide');
     if (guide) guide.classList.add('hidden');
 
+    // Remove golden highlight once user interacts
+    document.querySelectorAll('.golden-glow').forEach(el => el.classList.remove('golden-glow'));
+
     // Prevent zoom if clicking on input fields
     if (event.target.classList.contains('card-input-field')) {
         return;

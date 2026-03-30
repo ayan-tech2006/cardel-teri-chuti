@@ -78,9 +78,9 @@
 
                 <div class="checklist-item" id="check-item-1">
                     <div class="check-input-wrap">
-                        <label class="check-label">Name</label>
-                        <input type="text" class="check-field" id="sidebarName" placeholder="Enter Full Name" autocomplete="off"
+                        <input type="text" class="check-field" id="sidebarName" placeholder=" " autocomplete="off"
                                oninput="syncFromSidebar('name', this.value)">
+                        <label class="check-label">Name</label>
                     </div>
                     <div class="check-circle">
                         <span class="check-icon">✓</span>
@@ -89,9 +89,9 @@
 
                 <div class="checklist-item" id="check-item-2">
                     <div class="check-input-wrap">
-                        <label class="check-label">Job Title</label>
-                        <input type="text" class="check-field" id="sidebarTitle" placeholder="Enter Job Title" autocomplete="off"
+                        <input type="text" class="check-field" id="sidebarTitle" placeholder=" " autocomplete="off"
                                oninput="syncFromSidebar('title', this.value)">
+                        <label class="check-label">Job Title</label>
                     </div>
                     <div class="check-circle">
                         <span class="check-icon">✓</span>
@@ -100,9 +100,9 @@
 
                 <div class="checklist-item" id="check-item-3">
                     <div class="check-input-wrap">
-                        <label class="check-label">Phone</label>
-                        <input type="tel" class="check-field" id="sidebarNumber" placeholder="Enter Phone Number" autocomplete="off"
+                        <input type="tel" class="check-field" id="sidebarNumber" placeholder=" " autocomplete="off"
                                oninput="syncFromSidebar('number', this.value)">
+                        <label class="check-label">Phone</label>
                     </div>
                     <div class="check-circle">
                         <span class="check-icon">✓</span>
@@ -111,9 +111,9 @@
 
                 <div class="checklist-item" id="check-item-4">
                     <div class="check-input-wrap">
-                        <label class="check-label">Gmail</label>
-                        <input type="email" class="check-field" id="sidebarEmail" placeholder="Enter Gmail Address" autocomplete="off"
+                        <input type="email" class="check-field" id="sidebarEmail" placeholder=" " autocomplete="off"
                                oninput="syncFromSidebar('email', this.value)">
+                        <label class="check-label">Gmail</label>
                     </div>
                     <div class="check-circle">
                         <span class="check-icon">✓</span>
@@ -144,7 +144,7 @@
                 <div class="card-container-3d" id="cardContainer3d" onclick="toggleCardZoom(event)">
                     <div class="card-3d-wrapper" id="card3dWrapper">
                         <div class="card-3d-inner" id="card3dInner">
-                            <div class="card-face-3d front" id="cardFrontFace">
+                            <div class="card-face-3d front golden-glow" id="cardFrontFace">
                                 <canvas id="heroFrontCanvas" class="card-canvas-3d"></canvas>
                                 <div class="card-shine"></div>
 
@@ -156,7 +156,7 @@
                                     <input type="email" class="card-input-field input-email" id="inputEmail" placeholder="hello@cardel.com" value="" autocomplete="off">
                                 </div>
                             </div>
-                            <div class="card-face-3d back">
+                            <div class="card-face-3d back golden-glow">
                                 <canvas id="heroBackCanvas" class="card-canvas-3d"></canvas>
                                 <div class="card-shine"></div>
                             </div>
