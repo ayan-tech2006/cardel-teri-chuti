@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARDEL - Luxury Business Card Customizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" href="image/Untitled design (8).png" type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <base target="_blank">
+</head>
+
+<body>
+    <canvas id="threeOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 100;"></canvas>
+
+    <!-- Zoom Overlay -->
+    <div class="zoom-overlay" id="zoomOverlay"></div>
+    <div class="close-hint" id="closeHint">Click outside card to close</div>
+<div class="header">
+
+    <!-- Background Video -->
+    <video autoplay muted loop playsinline>
+        <source src="image/Untitled design (7).mp4" type="video/mp4">
+    </video>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <div class="nav-left"></div>
+
+            <div class="nav-center">
+               <div class="nav-logo">
+    <video autoplay muted loop playsinline>
+        <source src="image/ecea5294010946da9c85d9af2cae86da.webm" type="video/mp4">
+    </video>
+</div>
+            </div>
+
+            <div class="nav-right">
+                <a href="order.html" class="nav-begin" onclick="saveToStorage()">Order →</a>
+            </div>
+        </div>
+
+        <div class="nav-divider">
+            <hr>
+        </div>
+
+        <div class="nav-links-wrapper">
+            <ul class="nav-links">
+                <li><a href="#">Design</a></li>
+                <li><a href="#">Materials</a></li>
+                <li><a href="#">Atelier</a></li>
+                <li><a href="order.html" onclick="saveToStorage()">Order</a></li>
+                <li><a href="#">Help</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero">
+        <!-- LEFT SIDE: Content -->
+        <div class="hero-content" id="heroContent">
+            <h1>Design<br>Your Legacy.</h1>
+            <p class="subtitle">
+                Tailored cards for those who understand detail.
+            </p>
+
+            <!-- Checklist with real inputs -->
+            <div class="checklist-container golden-glow">
+                <div class="checklist-title">Personalise Your Card</div>
+
+                <div class="checklist-item" id="check-item-1">
+                    <div class="check-input-wrap">
+                        <input type="text" class="check-field" id="sidebarName" placeholder=" " autocomplete="off"
+                               oninput="syncFromSidebar('name', this.value)">
+                        <label class="check-label">Name</label>
+                    </div>
+                    <div class="check-circle">
+                        <span class="check-icon">✓</span>
+                    </div>
+                </div>
+
+                <div class="checklist-item" id="check-item-2">
+                    <div class="check-input-wrap">
+                        <input type="text" class="check-field" id="sidebarTitle" placeholder=" " autocomplete="off"
+                               oninput="syncFromSidebar('title', this.value)">
+                        <label class="check-label">Job Title</label>
+                    </div>
+                    <div class="check-circle">
+                        <span class="check-icon">✓</span>
+                    </div>
+                </div>
+
+                <div class="checklist-item" id="check-item-3">
+                    <div class="check-input-wrap">
+                        <input type="tel" class="check-field" id="sidebarNumber" placeholder=" " autocomplete="off"
+                               oninput="syncFromSidebar('number', this.value)">
+                        <label class="check-label">Phone</label>
+                    </div>
+                    <div class="check-circle">
+                        <span class="check-icon">✓</span>
+                    </div>
+                </div>
+
+                <div class="checklist-item" id="check-item-4">
+                    <div class="check-input-wrap">
+                        <input type="email" class="check-field" id="sidebarEmail" placeholder=" " autocomplete="off"
+                               oninput="syncFromSidebar('email', this.value)">
+                        <label class="check-label">Gmail</label>
+                    </div>
+                    <div class="check-circle">
+                        <span class="check-icon">✓</span>
+                    </div>
+                </div>
+            </div>
+
+         <button class="next-btn" id="nextBtn" onclick="continueToMaterials()">
+    Continue
+</button>
+
+            <p class="hero-help" style="margin-top: 1.8rem; font-family: 'Playfair Display', serif; font-size: 0.95rem; color: #6b6b6b; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+  
+ 
+  
+  Need Help
+ <span style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 1px solid #6b6b6b; border-radius: 50%; font-size: 12px; font-family: 'Helvetica', sans-serif;">
+    ?
+  </span>
+</p>
+        </div>
+
+        <!-- RIGHT SIDE: Card + Materials -->
+        <!-- RIGHT SIDE: Card + Materials -->
+        <div class="card-preview-section" id="cardPreviewSection">
+            <!-- 3D Card with Entrance Wrapper -->
+            <div class="card-entrance-wrapper" id="cardEntranceWrapper">
+                <div class="card-container-3d" id="cardContainer3d" onclick="toggleCardZoom(event)">
+                    <div class="hand-indicator">👉</div>
+                    <div class="card-3d-wrapper" id="card3dWrapper">
+                        <div class="card-3d-inner" id="card3dInner">
+                            <div class="card-face-3d front golden-glow" id="cardFrontFace">
+                                <canvas id="heroFrontCanvas" class="card-canvas-3d"></canvas>
+                                <div class="card-shine"></div>
+
+                                <!-- Direct Input Overlay -->
+                                <div class="card-input-overlay" id="cardInputOverlay" onclick="event.stopPropagation()">
+                                    <input type="text" class="card-input-field input-name" id="inputName" placeholder="Your Name" value="" autocomplete="off">
+                                    <input type="text" class="card-input-field input-title" id="inputTitle" placeholder="Creative Director" value="" autocomplete="off">
+                                    <input type="text" class="card-input-field input-number" id="inputNumber" placeholder="+1 (555) 000-0000" value="" autocomplete="off">
+                                    <input type="email" class="card-input-field input-email" id="inputEmail" placeholder="hello@cardel.com" value="" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="card-face-3d back golden-glow">
+                                <canvas id="heroBackCanvas" class="card-canvas-3d"></canvas>
+                                <div class="card-shine"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Materials Section - BELOW CARD -->
+            <div id="materials">
+                <!-- Card click guide -->
+
+
+                <div class="category-tabs">
+                    <div class="category-tab active" onclick="filterMaterials('metal')">Metal</div>
+                    <div class="category-tab" onclick="filterMaterials('wood')">Wood</div>
+                    <div class="category-tab" onclick="filterMaterials('carbon')">Carbon</div>
+                    <div class="category-tab" onclick="filterMaterials('limited')">Limited</div>
+                </div>
+
+                <div class="materials-grid" id="materialsGrid"></div>
+            </div>
+        </div>
+    </section>
+
+</div>
+    <!-- 4 Steps Section -->
+    <section id="steps-section" class="reveal-section" style="padding: 8rem 4rem; position: relative; overflow: hidden; opacity: 0; transform: translateY(60px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="max-width: 1400px; margin: 0 auto; position: relative;">
+
+            <!-- Header -->
+            <div class="reveal-item" style="text-align: center; margin-bottom: 5rem; opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;">
+                <h2 style="font-family: 'Playfair Display', serif; font-size: 3.2rem; font-weight: 300; color: #1a1a1a; margin-bottom: 1rem; letter-spacing: -0.02em;">
+                <span style="font-size: 7rem; font-weight: 300; color: #c9a962; margin-right: 0.5rem; line-height: 1; display: inline-block; transition: transform 0.6s ease;">4</span><span style="font-size: 3.25rem;">Steps to Memorable Business</span>
+            </h2>
+                <p style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #6b6b6b; font-weight: 300;">
+                    Craft a luxury business card that makes a statement in four simple steps.
+                </p>
+            </div>
+
+            <!-- Content Grid – restructured for coordinated hover -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; max-width: 1400px; margin: 0 auto; position: relative;">
+                
+                <!-- LEFT: Steps & Images -->
+                <div style="display: flex; flex-direction: column; gap: 2rem;">
+                    
+                    <!-- Step 1 -->
+                    <div class="group step-row" style="display: flex; align-items: flex-start; gap: 3.5rem; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; padding: 1rem 1.5rem; border-radius: 12px; position: relative;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: baseline; gap: 1.2rem; margin-bottom: 0.7rem;">
+                                <span class="step-number" style="font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 300; color: #c9a962; line-height: 1; min-width: 50px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">1.</span>
+                                <h3 class="step-title" style="font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 400; color: #1a1a1a; margin: 0; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">Define Identity</h3>
+                            </div>
+                            <p class="step-desc" style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #6b6b6b; line-height: 1.7; margin-left: 50px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0.6;">
+                                Enter your name, card number,
+                                <br>and details.
+                            </p>
+                        </div>
+                        <div class="step-image-wrap" style="width: 160px; display: flex; justify-content: center; align-items: center; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                            <img src="image/1.png" alt="" class="card-parallax" style="width: 130px; height: auto; object-fit: contain; display: block; filter: drop-shadow(0 15px 35px rgba(0,0,0,0.1)); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="group step-row" style="display: flex; align-items: flex-start; gap: 3.5rem; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; padding: 1rem 1.5rem; border-radius: 12px; position: relative;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: baseline; gap: 1.2rem; margin-bottom: 0.7rem;">
+                                <span class="step-number" style="font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 300; color: #c9a962; line-height: 1; min-width: 50px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">2.</span>
+                                <h3 class="step-title" style="font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 400; color: #1a1a1a; margin: 0; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">Choose Material</h3>
+                            </div>
+                            <p class="step-desc" style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #6b6b6b; line-height: 1.7; margin-left: 50px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0.6;">
+                                Metal, wood, limited editions & more.
+                            </p>
+                        </div>
+                        <div class="step-image-wrap" style="width: 160px; display: flex; justify-content: center; align-items: center; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                            <img src="image/2.png" alt="" class="card-parallax" style="width: 130px; height: auto; object-fit: contain; display: block; filter: drop-shadow(0 15px 35px rgba(0,0,0,0.1)); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="group step-row" style="display: flex; align-items: flex-start; gap: 3.5rem; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; padding: 1rem 1.5rem; border-radius: 12px; position: relative;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: baseline; gap: 1.2rem; margin-bottom: 0.7rem;">
+                                <span class="step-number" style="font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 300; color: #c9a962; line-height: 1; min-width: 50px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">3.</span>
+                                <h3 class="step-title" style="font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 400; color: #1a1a1a; margin: 0; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">Refine Finish</h3>
+                            </div>
+                            <p class="step-desc" style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #6b6b6b; line-height: 1.7; margin-left: 50px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0.6;">
+                                Select card finish and personalize details.
+                            </p>
+                        </div>
+                        <div class="step-image-wrap" style="width: 160px; display: flex; justify-content: center; align-items: center; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                            <img src="image/3.png" alt="" class="card-parallax" style="width: 130px; height: auto; object-fit: contain; display: block; filter: drop-shadow(0 15px 35px rgba(0,0,0,0.1)); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="group step-row" style="display: flex; align-items: flex-start; gap: 3.5rem; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; padding: 1rem 1.5rem; border-radius: 12px; position: relative;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: baseline; gap: 1.2rem; margin-bottom: 0.7rem;">
+                                <span class="step-number" style="font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 300; color: #c9a962; line-height: 1; min-width: 50px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">4.</span>
+                                <h3 class="step-title" style="font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 400; color: #1a1a1a; margin: 0; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">Place Order</h3>
+                            </div>
+                            <p class="step-desc" style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #6b6b6b; line-height: 1.7; margin-left: 50px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0.6;">
+                                Review, finalize, and securely checkout.
+                            </p>
+                        </div>
+                        <div class="step-image-wrap" style="width: 160px; display: flex; justify-content: center; align-items: center; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                            <img src="image/4.png" alt="" class="card-parallax" style="width: 130px; height: auto; object-fit: contain; display: block; filter: drop-shadow(0 15px 35px rgba(0,0,0,0.1)); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT: Card preview – sticky -->
+                <div class="reveal-item steps-card-container" style="position: sticky; top: 120px; display: flex; justify-content: center; align-items: center; min-height: 500px; opacity: 0; transform: translateY(-60px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;">
+                    <div id="stepsCardCanvas" style="width: 380px; height: 240px; cursor: pointer; border-radius: 16px;" 
+                         onclick="document.getElementById('hero').scrollIntoView({behavior: 'smooth'})"
+                         title="Click to edit card">
+                    </div>
+                </div>
+
+            </div>
+
+
+            </div>
+    </section>
+
+
+
+   <section id="about-section" class="about-lux-section reveal-section" style="padding: 8rem 0; position: relative; z-index: 1;">
+    <div class="about-container">
+
+        <h1 class="about-main-heading reveal-item">
+            About the Card
+        </h1>
+
+        <p class="about-sub-heading reveal-item">
+            Timeless craftsmanship. Modern technology.
+        </p>
+
+        <div class="about-divider-wrap reveal-item">
+            <div class="about-gold-line"></div>
+            <div class="about-star-icon">★</div>
+            <div class="about-gold-line"></div>
+        </div>
+
+        <div class="about-card-float-wrapper reveal-item" id="cardFloatWrap" style="display: flex; justify-content: center; align-items: center; margin: 8rem 0 10rem 0; min-height: 350px;">
+            
+            <div class="about-card-image" style="width: 480px; height: 302px; max-width: 80vw; cursor: pointer; position: relative; z-index: 10000;" 
+                 onclick="document.getElementById('hero').scrollIntoView({behavior: 'smooth'})"
+                 title="Click to edit card">
+            </div>
+
+        </div>
+
+        <div class="about-grid-four" style="position: relative; z-index: 2;">
+            <div class="about-column reveal-item">
+                <h3>Craft & Materials</h3>
+                <p>Premium metal cards<br>crafted with precision<br>finishes.</p>
+            </div>
+
+            <div class="about-column reveal-item">
+                <h3>Technology</h3>
+                <p>NFC & QR seamlessly<br>integrated—no compromise<br>on aesthetics.</p>
+            </div>
+
+            <div class="about-column reveal-item">
+                <h3>Use Cases</h3>
+                <p>Business, networking,<br>private, corporate teams.</p>
+            </div>
+
+            <div class="about-column reveal-item">
+                <h3>Accessibility</h3>
+                <p>Designed to be intuitive,<br>readable, and inclusive.</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 3rem;">
+            <a href="#" class="about-gold-link reveal-item">
+                Learn how it works 
+                <span class="about-arrow-symbol">→</span>
+            </a>
+        </div>
+
+    </div>
+</section>
+ 
+
+    <!-- Partners Section -->
+    <section id="partners-section" class="reveal-section" style="padding: 6rem 4rem; position: relative; border-top: 1px solid rgba(0,0,0,0.05); opacity: 0; transform: translateY(60px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="max-width: 1400px; margin: 0 auto; margin-top: -100px;">
+
+            <!-- Header -->
+            <div class="reveal-item" style="text-align: center; margin-bottom: 4rem; opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;">
+                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 400; color: #1a1a1a; margin-bottom: 1rem;">Our Valued Partners</h2>
+                <p style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #6b6b6b; font-weight: 300;">
+                    Preferred by elite brands around the world.
+                </p>
+            </div>
+
+            <!-- Divider Line -->
+            <div class="reveal-item" style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent); margin-bottom: 4rem; opacity: 0; transform: scaleX(0); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s; position: relative; top: -50px;" ></div>
+
+            <!-- Partner Logos with 3D hover -->
+            <div class="reveal-item" style="display: flex; justify-content: center; align-items: center; gap: 4rem; flex-wrap: wrap; margin-bottom: 5rem; opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;">
+
+                <!-- Rolls Royce -->
+                <div class="partner-logo" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); transform-style: preserve-3d;" onmouseenter="this.style.transform='translateZ(30px) scale(1.1)'"
+                onmouseleave="this.style.transform='translateZ(0) scale(1)'">
+                    <div style="font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 600; color: #1a1a1a; letter-spacing: 0.05em; border: 2px solid #1a1a1a; padding: 0.3rem 0.6rem; line-height: 1; transition: all 0.3s ease;" onmouseenter="this.style.borderColor='#c9a962'; this.style.color='#c9a962'"
+                    onmouseleave="this.style.borderColor='#1a1a1a'; this.style.color='#1a1a1a'">RR</div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 0.5rem; letter-spacing: 0.2em; color: #666; text-transform: uppercase; text-align: center; line-height: 1.2; transition: color 0.3s ease;" onmouseenter="this.style.color='#c9a962'" onmouseleave="this.style.color='#666'">
+                        ROLLS
+                        <br>ROYCE
+                    </div>
+                </div>
+
+                <!-- Omega -->
+                <div class="partner-logo" style="font-family: 'Times New Roman', serif; font-size: 1.6rem; color: #1a1a1a; letter-spacing: 0.15em; font-weight: 400; text-transform: uppercase; cursor: pointer; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); transform-style: preserve-3d;"
+                onmouseenter="this.style.transform='translateZ(30px) scale(1.1)'; this.style.color='#c9a962'" onmouseleave="this.style.transform='translateZ(0) scale(1)'; this.style.color='#1a1a1a'">OMEGA</div>
+
+                <!-- Ferrari -->
+                <div class="partner-logo" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); transform-style: preserve-3d;" onmouseenter="this.style.transform='translateZ(30px) scale(1.1)'" onmouseleave="this.style.transform='translateZ(0) scale(1)'">
+                    <div style="width: 32px; height: 40px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; position: relative; transition: all 0.3s ease;" onmouseenter="this.style.background='#c9a962'" onmouseleave="this.style.background='#1a1a1a'">
+                        <div style="width: 24px; height: 32px; background: #f5f3f0; display: flex; align-items: center; justify-content: center;">
+                            <span style="font-family: serif; font-size: 1.2rem; color: #1a1a1a; font-weight: bold;">🐎</span>
+                        </div>
+                    </div>
+                    <span style="font-family: 'Times New Roman', serif; font-size: 1.1rem; color: #1a1a1a; letter-spacing: 0.05em; font-weight: 600; transition: color 0.3s ease;" onmouseenter="this.style.color='#c9a962'" onmouseleave="this.style.color='#1a1a1a'">Ferrari</span>
+                </div>
+
+                <!-- Lamborghini -->
+                <div class="partner-logo" style="width: 45px; height: 50px; border: 2px solid #1a1a1a; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); transform-style: preserve-3d;"
+                onmouseenter="this.style.transform='translateZ(30px) scale(1.1)'; this.style.borderColor='#c9a962'" onmouseleave="this.style.transform='translateZ(0) scale(1)'; this.style.borderColor='#1a1a1a'">
+                    <div style="width: 35px; height: 40px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; transition: background 0.3s ease;" onmouseenter="this.style.background='#c9a962'" onmouseleave="this.style.background='#1a1a1a'">
+                        <span style="color: #f5f3f0; font-size: 1.2rem;">🐂</span>
+                    </div>
+                </div>
+
+                <!-- Goldman Sachs -->
+                <div class="partner-logo" style="font-family: 'Times New Roman', serif; font-size: 1.3rem; color: #1a1a1a; line-height: 1.1; cursor: pointer; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); transform-style: preserve-3d;" onmouseenter="this.style.transform='translateZ(30px) scale(1.1)'; this.style.color='#c9a962'"
+                onmouseleave="this.style.transform='translateZ(0) scale(1)'; this.style.color='#1a1a1a'">
+                    <div style="font-weight: 600;">Goldman</div>
+                    <div style="font-weight: 400; margin-top: -2px;">Sachs</div>
+                </div>
+
+                <!-- Four Seasons -->
+                <div class="partner-logo" style="display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); transform-style: preserve-3d;" onmouseenter="this.style.transform='translateZ(30px) scale(1.1)'"
+                onmouseleave="this.style.transform='translateZ(0) scale(1)'">
+                    <div style="width: 30px; height: 40px; position: relative; transition: transform 0.3s ease;" onmouseenter="this.style.transform='scale(1.1)'" onmouseleave="this.style.transform='scale(1)'">
+                        <svg viewBox="0 0 30 40" fill="none" style="width: 100%; height: 100%;">
+                            <path d="M15 0L30 40H0L15 0Z" fill="#1a1a1a" />
+                            <path d="M15 5L25 35H5L15 5Z" fill="#f5f3f0" />
+                            <path d="M15 10L20 30H10L15 10Z" fill="#1a1a1a" />
+                        </svg>
+                    </div>
+                    <div style="font-family: 'Times New Roman', serif; font-size: 0.6rem; color: #1a1a1a; letter-spacing: 0.1em; text-transform: uppercase; text-align: center; transition: color 0.3s ease;" onmouseenter="this.style.color='#c9a962'" onmouseleave="this.style.color='#1a1a1a'">
+                        FOUR
+                        <br>SEASONS
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; margin-top: 3rem;">
+
+                <!-- Left: Text Content -->
+                <div class="reveal-item" style="opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;">
+                    <h3 style="font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 400; color: #1a1a1a; margin-bottom: 1.5rem; line-height: 1.3; transition: transform 0.4s ease;" onmouseenter="this.style.transform='translateX(10px)'" onmouseleave="this.style.transform='translateX(0)'">
+                    Elevate Your Brand with Custom Designs
+                </h3>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 0.95rem; color: #555; line-height: 1.8; margin-bottom: 2rem;">
+                        Unleash your brand's potential with our Designer Service. From logos to complete designs, our experts bring your business cards to life. Discover unique, standout cards that make a lasting impression.
+                    </p>
+                    <button class="luxury-btn" style="background: linear-gradient(135deg, #e8e4df 0%, #d4d0cb 100%); 
+                               border: 1px solid #c9c5c0; 
+                               padding: 1rem 2.5rem; 
+                               font-family: 'Playfair Display', serif; 
+                               font-size: 0.8rem; 
+                               letter-spacing: 0.12em; 
+                               text-transform: uppercase; 
+                               color: #1a1a1a; 
+                               cursor: pointer; 
+                               border-radius: 6px;
+                               box-shadow: 0 4px 15px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5);
+                               transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                               display: inline-flex;
+                               align-items: center;
+                               gap: 0.5rem;
+                               position: relative;
+                               overflow: hidden;
+                               transform-style: preserve-3d;">
+                        <span style="position: relative; z-index: 2; transition: transform 0.4s ease;">Discover Our Designer Service</span>
+                        <span style="position: relative; z-index: 2; transition: transform 0.4s ease;">→</span>
+                        <div style="position: absolute; inset: 0; background: linear-gradient(135deg, #c9a962 0%, #b8941f 100%); opacity: 0; transition: opacity 0.4s ease; z-index: 1;"></div>
+                    </button>
+                </div>
+
+                <!-- Right: Card Preview - Will render card using existing drawCard function -->
+               <div class="reveal-item partners-card-container" style="display: flex; justify-content: center; align-items: center; opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s;">
+    
+    <div id="partnersCardCanvas" style="width: 360px; height: 225px; cursor: pointer; border-radius: 14px;" 
+         onclick="document.getElementById('hero').scrollIntoView({behavior: 'smooth'})"
+         title="Click to edit card">
+    </div>
+
+</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Section -->
+    <section id="order">
+        <div class="order-container">
+            <!-- Left Side - Configuration -->
+            <div class="order-left">
+                <div class="order-header">
+                    <span class="order-number">3</span>
+                    <h2 class="order-title">Configuration & Order</h2>
+                    <p class="order-subtitle">Finalize your card specifications and complete your order securely.</p>
+                </div>
+
+                <!-- Card Type / Quantity -->
+                <div class="section-box">
+                    <div class="section-label">Card Type</div>
+                    <div class="section-sublabel">Select quantity:</div>
+
+                    <div class="quantity-options">
+                        <div class="quantity-option selected" onclick="selectQuantity(10, 590, this)">
+                            <div class="quantity-radio"></div>
+                            <div class="quantity-label">10 Cards</div>
+                            <div class="quantity-price">$590</div>
+                        </div>
+
+                        <div class="quantity-option" onclick="selectQuantity(25, 1225, this)">
+                            <div class="popular-badge">Popular</div>
+                            <div class="quantity-radio"></div>
+                            <div class="quantity-label">25 Cards</div>
+                            <div class="quantity-price">$1,225</div>
+                        </div>
+
+                        <div class="quantity-option" onclick="selectQuantity(50, 2250, this)">
+                            <div class="quantity-radio"></div>
+                            <div class="quantity-label">50 Cards</div>
+                            <div class="quantity-price">$2,250</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add-ons -->
+                <div class="section-box">
+                    <div class="section-label">Add-Ons</div>
+                    <div class="section-sublabel">Enhance your card:</div>
+
+                    <div class="addon-item">
+                        <div class="addon-info">
+                            <div class="addon-radio included"></div>
+                            <div class="addon-text">
+                                <h4>NFC Chip</h4>
+                                <p>Tap to share contact info</p>
+                            </div>
+                        </div>
+                        <div class="addon-price included">Included</div>
+                    </div>
+
+                    <div class="addon-item">
+                        <div class="addon-info">
+                            <div class="toggle-switch" id="qrToggle" onclick="toggleAddon('qr')"></div>
+                            <div class="addon-text">
+                                <h4>QR Code</h4>
+                                <p>Digital link</p>
+                            </div>
+                        </div>
+                        <div class="addon-price" id="qrPrice">+$45</div>
+                    </div>
+
+                    <div class="addon-item">
+                        <div class="addon-info">
+                            <div class="toggle-switch" id="laserToggle" onclick="toggleAddon('laser')"></div>
+                            <div class="addon-text">
+                                <h4>Laser Engraving</h4>
+                                <p>Custom text or logo</p>
+                            </div>
+                        </div>
+                        <div class="addon-price" id="laserPrice">+$80</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Preview & Summary -->
+            <div class="order-preview-section">
+                <div class="final-card-container">
+                    <div class="final-card" id="finalCard">
+                        <canvas id="finalCanvas" style="width: 100%; height: 100%;"></canvas>
+                    </div>
+                </div>
+
+                <div class="order-summary-box">
+                    <div class="summary-title">Order Summary</div>
+
+                    <div class="summary-line">
+                        <span class="summary-label" id="summaryQty">10x Black Metal Cards</span>
+                        <span class="summary-value" id="summaryBasePrice">$590</span>
+                    </div>
+
+                    <div class="summary-line" id="qrSummaryLine" style="display: none;">
+                        <span class="summary-label">QR Code</span>
+                        <span class="summary-value">+$45</span>
+                    </div>
+
+                    <div class="summary-line" id="laserSummaryLine" style="display: none;">
+                        <span class="summary-label">Laser Engraving</span>
+                        <span class="summary-value">+$80</span>
+                    </div>
+
+                    <div class="summary-line total">
+                        <span class="summary-label">Total</span>
+                        <span class="summary-value" id="summaryTotal">$590</span>
+                    </div>
+
+                    <div class="tax-note">All taxes included</div>
+
+                    <button class="checkout-btn" onclick="proceedToCheckout()">
+                        Proceed to Checkout
+                    </button>
+
+                    <div class="security-badges">
+                        <div class="security-badge">
+                            <span>🔒</span>
+                            <span>Secure Checkout</span>
+                        </div>
+                        <div class="security-badge">
+                            <span style="font-size: 1.2rem;">💳</span>
+                            <span>Encrypted Payment</span>
+                        </div>
+                        <div class="security-badge">
+                            <span>✓</span>
+                            <span>30 Day Guarantee</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+   
+
+    <!-- Luxury Footer -->
+    <footer class="lux-footer">
+        <div class="footer-inner">
+            <div class="footer-logo">CARDEL</div>
+
+            <nav class="footer-nav">
+                <a href="#hero">DESIGN</a>
+                <a href="#materials">MATERIALS</a>
+                <a href="#atelier">ATELIER</a>
+                <a href="#order">ORDER</a>
+                <a href="#help">HELP</a>
+            </nav>
+
+            <div class="footer-social">
+                <a href="#" aria-label="Instagram">Instagram</a>
+                <a href="#" aria-label="Facebook">Facebook</a>
+                <a href="#" aria-label="Pinterest">Pinterest</a>
+            </div>
+        </div>
+    </footer>
+    <script src="shared.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            // Only use smooth scrolling on non-touch or devices that support it well
+            const lenis = new Lenis({
+                duration: 1.4,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                orientation: 'vertical',
+                gestureOrientation: 'vertical',
+                smoothWheel: true,
+                wheelMultiplier: 0.9,
+                smoothTouch: false,
+            });
+
+            window.lenis = lenis;
+            document.documentElement.classList.add('lenis');
+
+            // Sync GSAP ScrollTrigger with Lenis
+            lenis.on('scroll', function(e) {
+                if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.update();
+            });
+
+            // Drive Lenis via GSAP's ticker for perfect frame sync
+            if (typeof gsap !== 'undefined') {
+                gsap.ticker.add(function(time) {
+                    lenis.raf(time * 1000);
+                });
+                gsap.ticker.lagSmoothing(0);
+            } else {
+                // Fallback: use native requestAnimationFrame
+                function raf(time) {
+                    lenis.raf(time);
+                    requestAnimationFrame(raf);
+                }
+                requestAnimationFrame(raf);
+            }
+        });
+    </script>
+</body>
+</html>
