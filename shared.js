@@ -2971,7 +2971,7 @@ window.updateAllCards = () => {
                 trigger: document.body,
                 start: "top top",
                 end: "bottom bottom",
-                scrub: 1.5, // Increased for more premium, fluid motion
+                scrub: 2.2, // Increased for a slower, more cinematic and smoother feel
                 invalidateOnRefresh: true // Recalculate on resize/layout shift
             }
         }).to(this.proxy, { 
