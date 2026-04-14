@@ -1,23 +1,57 @@
-       // ===== STORAGE FUNCTIONS =====
+// ===== STORAGE FUNCTIONS =====
 function saveToStorage() {
-    localStorage.setItem('cardel_state', JSON.stringify(state));
+    // Build a serializable copy of state — exclude Image objects
+    const serializableState = JSON.parse(JSON.stringify(state, (key, value) => {
+        if (value instanceof HTMLImageElement || value instanceof Image) return undefined;
+        return value;
+    }));
+    localStorage.setItem('cardel_state', JSON.stringify(serializableState));
 }
 
-function loadFromStorage() {
-    const saved = localStorage.getItem('cardel_state');
-    if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.cardData) Object.assign(state.cardData, parsed.cardData);
-    }
+function cleanFieldValue(value) {
+    if (value === undefined || value === null) return '';
+    const s = String(value).trim();
+    if (s.toLowerCase() === 'undefined' || s.toLowerCase() === 'null') return '';
+    return value;
 }
+
+function sanitizeCardTextFields() {
+    state.cardData.name = cleanFieldValue(state.cardData.name);
+    state.cardData.title = cleanFieldValue(state.cardData.title);
+    state.cardData.number = cleanFieldValue(state.cardData.number);
+    state.cardData.email = cleanFieldValue(state.cardData.email);
+    state.cardData.website = cleanFieldValue(state.cardData.website);
+}
+
+function getMaterialCategoryById(materialId) {
+    for (const category of Object.keys(state.materials)) {
+        if ((state.materials[category] || []).some(m => m.id === materialId)) return category;
+    }
+    return 'metal';
+}
+
+// loadFromStorage is defined below (single authoritative version)
         // Global State
         const state = {
      cardData: {
         name: '',
         title: '',
-        number: '',
-        email: '',
-        material: 'black-metal'
+        website: '',
+        showWebsiteFront: true,
+        showWebsiteBack: false,
+        material: 'silver',
+        materialCategory: 'metal',
+        // Typography controls
+        nameSize: 36,
+        numberSize: 18,
+        backWebsiteSize: 12,
+        font: "'Cormorant Garamond',serif",
+        align: 'left',
+        // Design upload fields
+        designDataUrl: null,
+        designOpacity: 0.85,
+        designImg: null,
+        contrastTransition: 0 // 0 = Dark, 1 = Light
     },
     activeHotspot: null,
     isZoomed: false,
@@ -30,95 +64,194 @@ function loadFromStorage() {
             laser: false
         }
     },
-    materials: {
-                metal: [
-                    { id: 'black-metal', name: 'Black Metal Matte', color: '#0a0a0a', thickness: '0.8mm', weight: '28g', finish: 'Brushed Matte', price: 0, desc: 'Premium black stainless steel with sophisticated brushed finish' },
-                    { id: 'gold-metal', name: 'Gold Mirror', color: '#d4af37', thickness: '0.8mm', weight: '28g', finish: 'Polished Mirror', price: 150, desc: '24k gold-plated with mirror-like reflectivity' },
-                    { id: 'silver-metal', name: 'Silver Brushed', color: '#c0c0c0', thickness: '0.8mm', weight: '28g', finish: 'Brushed Satin', price: 150, desc: 'Sterling silver-plated with elegant texture' },
-                    { id: 'rose-gold', name: 'Rose Gold', color: '#b76e79', thickness: '0.8mm', weight: '28g', finish: 'Polished', price: 175, desc: '18k rose gold with warm contemporary appeal' }
-                ],
-                wood: [
-                    { id: 'walnut', name: 'Black Walnut', color: '#3d2817', thickness: '1.0mm', weight: '18g', finish: 'Oiled Natural', price: 100, desc: 'Sustainably sourced American black walnut' },
-                    { id: 'maple', name: 'White Maple', color: '#f5f5dc', thickness: '1.0mm', weight: '16g', finish: 'Matte Sealed', price: 100, desc: 'Canadian hard maple with clean bright appearance' },
-                    { id: 'ebony', name: 'African Ebony', color: '#1c1c1c', thickness: '1.0mm', weight: '22g', finish: 'High Polish', price: 200, desc: 'Rare African ebony with deep black tone' },
-                    { id: 'bamboo', name: 'Carbonized Bamboo', color: '#3d2817', thickness: '0.9mm', weight: '14g', finish: 'Natural Oil', price: 80, desc: 'Eco-friendly bamboo with unique grain' }
-                ],
-                carbon: [
-                    { id: 'carbon-fiber', name: 'Carbon Fiber Weave', color: '#1a1a1a', thickness: '0.6mm', weight: '20g', finish: 'Twill Weave', price: 100, desc: 'Aerospace-grade with signature 2x2 pattern' },
-                    { id: 'forged-carbon', name: 'Forged Carbon', color: '#2a2a2a', thickness: '0.7mm', weight: '22g', finish: 'Forged Composite', price: 250, desc: 'Hand-forged with unique marble-like patterns' }
-                ],
-                limited: [
-                    { id: 'meteorite', name: 'Meteorite Inlay', color: '#4a4a4a', thickness: '1.2mm', weight: '32g', finish: 'Etched Pattern', price: 500, desc: 'Authentic Muonionalusta meteorite, 4.5B years old', badge: 'Rare' },
-                    { id: 'mother-pearl', name: 'Mother of Pearl', color: '#f0f0f0', thickness: '0.9mm', weight: '25g', finish: 'Natural Iridescent', price: 400, desc: 'Genuine pearl with rainbow-like light refraction', badge: 'Exclusive' }
-                ]
-            }
+   materials: {
+    // ── METAL (4) ───────────────────────────────────────────────
+    metal: [
+        { id: 'gunmetal', name: 'Black Metal', color: '#1a1a1a', thickness: '0.8mm', weight: '28g', finish: 'Brushed Matte', price: 0, desc: 'Premium black stainless steel with sophisticated brushed finish' },
+        { id: 'gold22k', name: 'Gold Metal', color: '#c9a440', thickness: '0.8mm', weight: '28g', finish: 'Polished Mirror', price: 150, desc: '24k gold-plated with mirror-like reflectivity', badge: 'SIGNATURE' },
+        { id: 'silver', name: 'Silver Metal', color: '#9e9e9e', thickness: '0.8mm', weight: '28g', finish: 'Brushed Satin', price: 150, desc: 'Sterling silver-plated with elegant brushed texture' },
+        { id: 'platinum', name: 'Platinum', color: '#b0b8c0', thickness: '0.8mm', weight: '30g', finish: 'Brushed Satin', price: 250, desc: 'Rare platinum-plated with sophisticated cool tone', badge: 'RARE' }
+    ],
+
+    // ── WOOD (5) ────────────────────────────────────────────────
+    wood: [
+        { id: 'ebony', name: 'African Ebony', color: '#1c1008', thickness: '1.0mm', weight: '22g', finish: 'High Polish', price: 200, desc: 'Rare African ebony with deep black tone and natural lustre' },
+        { id: 'mahogany', name: 'Mahogany', color: '#5a1e0a', thickness: '0.9mm', weight: '14g', finish: 'Natural Oil', price: 80, desc: 'Rich mahogany with a deep semi-gloss finish' },
+        { id: 'walnut', name: 'Black Walnut', color: '#3d2008', thickness: '1.0mm', weight: '18g', finish: 'Oiled Natural', price: 100, desc: 'Sustainably sourced American black walnut', badge: 'POPULAR' },
+        { id: 'maple', name: 'White Maple', color: '#c8a060', thickness: '1.0mm', weight: '16g', finish: 'Matte Sealed', price: 100, desc: 'Canadian hard maple with clean bright appearance' },
+        { id: 'birch', name: 'Birch White', color: '#e8dcc0', thickness: '1.0mm', weight: '15g', finish: 'Natural Matte', price: 90, desc: 'Nordic birch with pale, clean grain pattern' }
+    ],
+
+    // ── CARBON (5) ──────────────────────────────────────────────
+    carbon: [
+        { id: 'cf-black', name: 'Carbon Black', color: '#111111', thickness: '0.6mm', weight: '20g', finish: 'Twill Weave', price: 100, desc: 'Aerospace-grade with signature 2x2 pattern', badge: 'ULTRA', cf: true },
+        { id: 'cf-blue', name: 'Carbon Blue', color: '#0a1020', thickness: '0.6mm', weight: '20g', finish: 'Twill Weave', price: 120, desc: 'Carbon fiber infused with deep midnight blue tint', cf: true },
+        { id: 'cf-red', name: 'Carbon Red', color: '#200a0a', thickness: '0.6mm', weight: '20g', finish: 'Twill Weave', price: 120, desc: 'Carbon fiber with striking ruby red undertone', cf: true },
+        { id: 'cf-silver', name: 'Carbon Silver', color: '#1a1a1a', thickness: '0.6mm', weight: '21g', finish: 'Twill Weave', price: 110, desc: 'Carbon fiber with metallic silver clear coat', cf: true },
+        { id: 'forged-carbon', name: 'Forged Carbon', color: '#2a2a2a', thickness: '0.7mm', weight: '22g', finish: 'Forged Composite', price: 250, desc: 'Hand-forged with unique marble-like patterns', cf: true }
+    ],
+
+    // ── LIMITED (6) ─────────────────────────────────────────────
+    limited: [
+        { id: 'obsidian', name: 'Obsidian', color: '#2a2a3a', thickness: '1.1mm', weight: '30g', finish: 'Natural Polish', price: 350, desc: 'Volcanic obsidian with deep glassy finish', badge: 'RARE' },
+        { id: 'aurora', name: 'Aurora', color: '#1a0a2e', thickness: '0.9mm', weight: '28g', finish: 'Iridescent', price: 450, desc: 'Multi-layer aurora coating shifts colour with light', badge: '12 LEFT' },
+        { id: 'meteorite', name: 'Meteorite Inlay', color: '#4a4a4a', thickness: '1.2mm', weight: '32g', finish: 'Etched Pattern', price: 500, desc: 'Authentic Muonionalusta meteorite, 4.5B years old', badge: 'RARE' },
+        { id: 'ivory', name: 'Ivory Pearl', color: '#f8f4ec', thickness: '0.9mm', weight: '15g', finish: 'Pearlescent', price: 300, desc: 'Genuine mother-of-pearl inlay with soft iridescence' },
+        { id: 'glacial', name: 'Glacial Blue', color: '#a8d4e8', thickness: '0.8mm', weight: '25g', finish: 'Anodized Frost', price: 280, desc: 'Frozen aesthetic with crisp, cool anodized finish', badge: 'NEW' },
+        { id: 'vanta', name: 'Vanta Black', color: '#050505', thickness: '0.8mm', weight: '28g', finish: 'Ultra-Matte', price: 600, desc: 'The darkest card ever made — absorbs 99.9% of light', badge: 'ULTRA' }
+    ]
+},
+            
+            // ── TEMPLATES (Shared source) ───────────────────────────────────
+            templates: [
+                { id: 'editorial', name: 'Editorial', cat: 'editorial', mid: 'gunmetal' },
+                { id: 'corporate', name: 'Corporate', cat: 'corporate', mid: 'gold22k' },
+                { id: 'minimal', name: 'Minimal', cat: 'minimal', mid: 'silver' },
+                { id: 'luxury', name: 'Luxury Gold', cat: 'editorial', mid: 'walnut' },
+                { id: 'carbon-pro', name: 'Carbon Pro', cat: 'editorial', mid: 'cf-black' },
+                { id: 'ivory-cls', name: 'Ivory', cat: 'minimal', mid: 'ivory' }
+            ]
         };
 
-        // Initialize
+        // Initialize — only run index.html-specific calls when on that page
        window.addEventListener('load', () => {
-    loadMaterials('metal');
-    setup3DTilt();
-    setupStepImagesTilt();
-    updateAllCards();
-    setupCardInputs();
+    // Keep one persisted state across index/materials/order pages.
+    const isIndexPage = !!document.getElementById('cardContainer3d');
     
-    // Animate card entrance immediately
+    if (isIndexPage) {
+        // ALWAYS start fresh on the index page as requested: 
+        // Silver material + empty identity fields on every refresh.
+        state.cardData.material = 'silver';
+        state.cardData.materialCategory = 'metal';
+        state.cardData.name = '';
+        state.cardData.title = '';
+        state.cardData.number = '';
+        state.cardData.email = '';
+        state.cardData.website = '';
+        
+        // Update storage to reflect the reset, so it stays silver even if they navigate away and back
+        saveToStorage();
+    } else {
+        // Materials or Order page: load normal persisted state
+        loadFromStorage();
+    }
+
+    // index.html-only initializations (guarded by element presence)
+    const savedCategory = state.cardData.materialCategory || 'metal';
+    if (document.getElementById('materialsGrid'))    loadMaterials(savedCategory);
+    if (document.getElementById('cardContainer3d'))  setup3DTilt();
+    if (document.getElementById('steps-section'))    setupStepImagesTilt();
+    if (document.getElementById('cardInputOverlay')) setupCardInputs();
+    setupSidebarEnterFlow();
+
+    // updateAllCards is now page-safe (uses null-checks inside)
+    updateAllCards();
+
+    // Force canvas redraw after a short delay to ensure textures are fresh
+    // (handles the case where user returns from materials page with a new material)
+    setTimeout(() => {
+        if (document.getElementById('heroFrontCanvas')) {
+            drawCard('heroFrontCanvas', 'front', 600, 378);
+            drawCard('heroBackCanvas', 'back', 600, 378);
+        }
+    }, 150);
+
+    // Restore sidebar inputs and checklist from saved state (index.html)
+    syncSidebarFromState();
+    updateChecklistState();
+    
+    // Animate card entrance immediately (index.html only)
     setTimeout(() => {
         const cardWrapper = document.getElementById('cardEntranceWrapper');
         if (cardWrapper) cardWrapper.classList.add('loaded');
     }, 100);
 });
 
-     // ─────────────────────────────────────────────
-     // SIDEBAR ↔ CARD SYNC
-     // ─────────────────────────────────────────────
-     function hideInteractionCues() {
-          // Remove golden highlight
-          document.querySelectorAll('.golden-glow').forEach(el => el.classList.remove('golden-glow'));
-          
-          // Hide and remove hand indicator
-          const hands = document.querySelectorAll('.hand-indicator');
-          hands.forEach(hand => {
-              hand.style.opacity = '0';
-              hand.style.pointerEvents = 'none';
-              setTimeout(() => hand.remove(), 400);
-          });
+      // ─────────────────────────────────────────────
+      // SIDEBAR ↔ CARD SYNC
+      // ─────────────────────────────────────────────
+      let _syncDebounce = null;
+      let _nextDetailsRevealAt = 0;
+      const offCanvas = typeof document !== 'undefined' ? document.createElement('canvas') : null;
+      const offCtx = offCanvas ? offCanvas.getContext('2d') : null;
 
-          // Hide legacy guide if it exists
-          const guide = document.getElementById('cardClickGuide');
-          if (guide) guide.classList.add('hidden');
-      }
-      window.hideInteractionCues = hideInteractionCues;
+     function triggerNextDetailsReveal() {
+         const now = Date.now();
+         if (now - _nextDetailsRevealAt < 450) return;
+         _nextDetailsRevealAt = now;
 
-      // Called when user types in the sidebar inputs
-      function syncFromSidebar(field, value) {
-          state.cardData[field] = value;
-          updateChecklistState();
-          hideInteractionCues();
+         const nextBtn = document.getElementById('nextBtn');
+         const checklist = document.querySelector('.checklist-container');
+         const preview = document.getElementById('cardPreviewSection');
 
-          // Debounce the expensive canvas redraw by 120ms
-          clearTimeout(_syncDebounce);
-          _syncDebounce = setTimeout(() => {
-              updateAllCards();
-          }, 120);
-      }
-      window.syncFromSidebar = syncFromSidebar;
+         if (nextBtn) {
+             nextBtn.classList.add('visible');
+             if (typeof gsap !== 'undefined') {
+                 gsap.fromTo(nextBtn, { x: -28, opacity: 0.35 }, { x: 0, opacity: 1, duration: 0.48, ease: 'power3.out', clearProps: 'transform' });
+             }
+         }
+         if (typeof gsap !== 'undefined') {
+             if (checklist) gsap.fromTo(checklist, { x: -18 }, { x: 0, duration: 0.4, ease: 'power2.out', clearProps: 'transform' });
+             if (preview) gsap.fromTo(preview, { x: 18 }, { x: 0, duration: 0.4, ease: 'power2.out', clearProps: 'transform' });
+         }
+     }
+     window.triggerNextDetailsReveal = triggerNextDetailsReveal;
 
-     let _syncDebounce = null;
+     function setupSidebarEnterFlow() {
+         const ids = ['sidebarName', 'sidebarTitle', 'sidebarNumber', 'sidebarEmail', 'sidebarWebsite'];
+         const fields = ids.map(id => document.getElementById(id)).filter(Boolean);
+         if (!fields.length) return;
 
+         fields.forEach((field, idx) => {
+             field.addEventListener('keydown', (e) => {
+                 if (e.key !== 'Enter') return;
+                 e.preventDefault();
+                 const nextField = fields[idx + 1];
+                 if (nextField) {
+                     nextField.focus();
+                     nextField.select?.();
+                 } else {
+                     triggerNextDetailsReveal();
+                 }
+             });
+         });
+     }
+     window.setupSidebarEnterFlow = setupSidebarEnterFlow;
+
+     // Called when user types in the sidebar inputs
+     function syncFromSidebar(field, value) {
+         state.cardData[field] = value;
+         updateChecklistState(); // instant — no canvas, just class changes
+        
+        // Remove guidance glow from sidebar on first typing
+        const checklist = document.querySelector('.checklist-container');
+        if (checklist) checklist.classList.remove('guidance-glow');
+
+         // Debounce the expensive canvas redraw by 120ms
+         clearTimeout(_syncDebounce);
+         _syncDebounce = setTimeout(() => {
+             updateAllCards();
+             saveToStorage();
+         }, 120);
+     }
+     window.syncFromSidebar = syncFromSidebar;
 
      // Sync sidebar fields FROM state (e.g., after card overlay editing)
      function syncSidebarFromState() {
-         const sidebarName   = document.getElementById('sidebarName');
-         const sidebarTitle  = document.getElementById('sidebarTitle');
-         const sidebarNumber = document.getElementById('sidebarNumber');
-         const sidebarEmail  = document.getElementById('sidebarEmail');
-         if (sidebarName)   sidebarName.value   = state.cardData.name   || '';
-         if (sidebarTitle)  sidebarTitle.value  = state.cardData.title  || '';
-         if (sidebarNumber) sidebarNumber.value = state.cardData.number || '';
-         if (sidebarEmail)  sidebarEmail.value  = state.cardData.email  || '';
-         updateChecklistState();
-     }
+          const sidebarName   = document.getElementById('sidebarName');
+          const sidebarTitle  = document.getElementById('sidebarTitle');
+          const sidebarNumber = document.getElementById('sidebarNumber');
+          const sidebarEmail  = document.getElementById('sidebarEmail');
+          const sidebarWebsite = document.getElementById('sidebarWebsite');
+          
+          if (sidebarName)   sidebarName.value   = cleanFieldValue(state.cardData.name)   || '';
+          if (sidebarTitle)  sidebarTitle.value  = cleanFieldValue(state.cardData.title)  || '';
+          if (sidebarNumber) sidebarNumber.value = cleanFieldValue(state.cardData.number) || '';
+          if (sidebarEmail)  sidebarEmail.value  = cleanFieldValue(state.cardData.email)  || '';
+          if (sidebarWebsite) sidebarWebsite.value = cleanFieldValue(state.cardData.website) || '';
+          
+          updateChecklistState();
+      }
      window.syncSidebarFromState = syncSidebarFromState;
 
      // Update the check-circle states based on filled fields
@@ -127,10 +260,13 @@ function loadFromStorage() {
          const item2 = document.getElementById('check-item-2');
          const item3 = document.getElementById('check-item-3');
          const item4 = document.getElementById('check-item-4');
+         const item5 = document.getElementById('check-item-5');
+         
          if (item1) item1.classList.toggle('completed', !!state.cardData.name);
          if (item2) item2.classList.toggle('completed', !!state.cardData.title);
          if (item3) item3.classList.toggle('completed', !!state.cardData.number);
          if (item4) item4.classList.toggle('completed', !!state.cardData.email);
+         if (item5) item5.classList.toggle('completed', !!state.cardData.website);
 
          // Show Continue button when name + number + email are filled
          const nextBtn = document.getElementById('nextBtn');
@@ -144,7 +280,20 @@ function loadFromStorage() {
      // Card Zoom Functionality with GSAP
 // Hide the guide tooltip once the card is tapped once
 function toggleCardZoom(event) {
-    hideInteractionCues();
+    // Remove guidance elements on interaction
+    const fingerGuide = document.getElementById('fingerGuide');
+    const cardContainer = document.getElementById('cardContainer3d');
+    const checklist = document.querySelector('.checklist-container');
+    if (fingerGuide) fingerGuide.classList.add('hidden');
+    if (cardContainer) cardContainer.classList.add('interacted');
+    if (checklist) checklist.classList.remove('guidance-glow');
+
+    // Hide click guide on first interaction
+    const guide = document.getElementById('cardClickGuide');
+    if (guide) guide.classList.add('hidden');
+
+    // Remove golden highlight once user interacts
+    document.querySelectorAll('.golden-glow').forEach(el => el.classList.remove('golden-glow'));
 
     // Prevent zoom if clicking on input fields
     if (event.target.classList.contains('card-input-field')) {
@@ -173,6 +322,14 @@ function getInputColorsForMaterial(materialId) {
 }
 
 
+function handleScrollExit(e) {
+    if (state.isZoomed) {
+        // Prevent the actual scroll from moving the page while we close
+        if (e.cancelable) e.preventDefault();
+        closeCardZoom();
+    }
+}
+
 function zoomIn() {
     // Get elements first
     const cardContainer = document.getElementById('cardContainer3d');
@@ -192,30 +349,33 @@ function zoomIn() {
     
     // CRITICAL: Set isZoomed FIRST, then draw
     state.isZoomed = true;
+    const section = document.getElementById('cardPreviewSection');
+    if (section) section.classList.add('zoomed-state');
+
     
     // NOW draw with isZoomed = true (hides text, shows material only)
     drawCard('heroFrontCanvas', 'front', 600, 378);
     drawCard('heroBackCanvas', 'back', 600, 378);
     
     // Get dynamic colors based on current material
-    const colors = getInputColorsForMaterial(state.cardData.material);
+    const colors = getTextColorsForMaterial(state.cardData.material);
+
+    // Apply dynamic colors to input fields globally via sync
+    syncInputColors();
     
-    // Apply dynamic colors to input fields
     const nameInput = document.getElementById('inputName');
     const titleInput = document.getElementById('inputTitle');
     const numberInput = document.getElementById('inputNumber');
     const emailInput = document.getElementById('inputEmail');
-    
-    nameInput.style.color = colors.name;
-    titleInput.style.color = colors.title;
-    numberInput.style.color = colors.number;
-    emailInput.style.color = colors.email;
-    
-    // Update CSS custom property for icons (if you use CSS variables)
-    cardContainer.style.setProperty('--icon-color', colors.icons);
+
+    // Update CSS custom property for icons
+    cardContainer.style.setProperty('--icon-color', colors.primary);
+    cardContainer.style.setProperty('--text-shadow', colors.shadow);
     
     // Add zoomed class for CSS
     cardContainer.classList.add('zoomed');
+    cardContainer.style.opacity = '1';
+    cardContainer.style.filter = 'none';
     overlay.classList.add('active');
     closeHint.classList.add('visible');
     
@@ -223,10 +383,12 @@ function zoomIn() {
     cardContainer.style.animation = 'none';
     
     // Sync input values
-    nameInput.value = state.cardData.name;
-    titleInput.value = state.cardData.title;
-    numberInput.value = state.cardData.number;
-    emailInput.value = state.cardData.email;
+    sanitizeCardTextFields();
+    if (nameInput) nameInput.value = state.cardData.name || '';
+    if (titleInput) titleInput.value = state.cardData.title || '';
+    if (numberInput) numberInput.value = state.cardData.number || '';
+    if (emailInput) emailInput.value = state.cardData.email || '';
+    if (document.getElementById('inputWebsite')) document.getElementById('inputWebsite').value = state.cardData.website || '';
     
     // Kill existing tweens
     gsap.killTweensOf(cardContainer);
@@ -236,11 +398,12 @@ function zoomIn() {
     
     // Animate card to center
     gsap.fromTo(cardContainer, 
-        { x: 0, y: 0, scale: 1 },
+        { x: 0, y: 0, scale: 1, opacity: 1 },
         {
             x: translateX,
             y: translateY,
             scale: window.innerWidth < 768 ? 0.95 : 1.4,
+            opacity: 1,
             duration: 1.2,
             ease: 'expo.out',
             onComplete: () => {
@@ -252,12 +415,17 @@ function zoomIn() {
         }
     );
     
-    // Fade background
-    gsap.to([heroContent, materialsSection, navbar], {
-        opacity: 0.3,
-        duration: 0.4,
-        ease: 'power2.out'
-    });
+    // Background stays visible — the overlay blur handles focus
+    if (materialsSection) {
+        materialsSection.style.filter = 'blur(8px)';
+        materialsSection.style.opacity = '0.3';
+        materialsSection.style.transition = 'all 0.4s ease';
+    }
+
+    // Lock scroll and add exit listener
+    if (window.lenis) window.lenis.stop();
+    window.addEventListener('wheel', handleScrollExit, { passive: false });
+    window.addEventListener('touchmove', handleScrollExit, { passive: false });
 }
 function closeCardZoom() {
     const cardContainer = document.getElementById('cardContainer3d');
@@ -276,8 +444,12 @@ function closeCardZoom() {
     // INSTANT show canvas
     canvas.style.opacity = '1';
     
-    // Remove zoomed class immediately to trigger CSS changes
+    // Remove zoomed class
     cardContainer.classList.remove('zoomed');
+    cardContainer.style.opacity = '';
+    cardContainer.style.filter = '';
+    const section = document.getElementById('cardPreviewSection');
+    if (section) section.classList.remove('zoomed-state');
     
     // NOW set state and re-render
     state.isZoomed = false;
@@ -327,12 +499,16 @@ function closeCardZoom() {
         onComplete: () => overlay.classList.remove('active')
     });
     
-    // Restore background
-    gsap.to([heroContent, materialsSection, navbar], {
-        opacity: 1,
-        duration: 0.4,
-        ease: 'power2.out'
-    });
+    // Overlay fade handled by GSAP above
+    if (materialsSection) {
+        materialsSection.style.filter = '';
+        materialsSection.style.opacity = '';
+    }
+
+    // Unlock scroll and remove exit listener
+    if (window.lenis) window.lenis.start();
+    window.removeEventListener('wheel', handleScrollExit);
+    window.removeEventListener('touchmove', handleScrollExit);
 }
 
 // Close zoom when clicking outside card
@@ -362,90 +538,146 @@ document.addEventListener('keydown', (e) => {
     const titleInput = document.getElementById('inputTitle');
     const numberInput = document.getElementById('inputNumber');
     const emailInput = document.getElementById('inputEmail');
-    const inputs = [nameInput, titleInput, numberInput, emailInput];
+    const websiteInput = document.getElementById('inputWebsite');
+    const inputs = [nameInput, titleInput, numberInput, emailInput, websiteInput];
 
-    // Helper to show input with proper color
-    function showInput(input, color) {
+    // Helper to show input with proper color dynamics based on material
+    function showInput(input) {
+        if (!input) return;
         input.style.opacity = '1';
-        input.style.color = color;
+        syncInputColors(); 
     }
 
     // Click on card area to activate fields
     document.getElementById('cardInputOverlay').addEventListener('click', (e) => {
         if (e.target.id === 'cardInputOverlay') {
             if (!state.cardData.name) {
-                showInput(nameInput, '#c9a962');
+                showInput(nameInput);
                 nameInput.focus();
             } else if (!state.cardData.title) {
-                showInput(titleInput, '#aaaaaa');
+                showInput(titleInput);
                 titleInput.focus();
             } else if (!state.cardData.number) {
-                showInput(numberInput, '#ffffff');
+                showInput(numberInput);
                 numberInput.focus();
             } else if (!state.cardData.email) {
-                showInput(emailInput, '#888888');
+                showInput(emailInput);
                 emailInput.focus();
+            } else if (!state.cardData.website) {
+                showInput(websiteInput);
+                websiteInput.focus();
             }
         }
     });
 
     // Input field interactions
-    nameInput.addEventListener('focus', () => showInput(nameInput, '#c9a962'));
-    titleInput.addEventListener('focus', () => showInput(titleInput, '#aaaaaa'));
-    numberInput.addEventListener('focus', () => showInput(numberInput, '#ffffff'));
-    emailInput.addEventListener('focus', () => showInput(emailInput, '#888888'));
+    inputs.filter(i => i).forEach(input => {
+        input.addEventListener('focus', () => showInput(input));
+    });
 
     // Sync with state on input
-    nameInput.addEventListener('input', (e) => {
+    if (nameInput) nameInput.addEventListener('input', (e) => {
         state.cardData.name = e.target.value;
         updateChecklistState();
+        updateAllCards();
     });
 
-    titleInput.addEventListener('input', (e) => {
+    if (titleInput) titleInput.addEventListener('input', (e) => {
         state.cardData.title = e.target.value;
+        updateAllCards();
     });
 
-    numberInput.addEventListener('input', (e) => {
+    if (numberInput) numberInput.addEventListener('input', (e) => {
         state.cardData.number = e.target.value;
         updateChecklistState();
+        updateAllCards();
     });
 
-    emailInput.addEventListener('input', (e) => {
+    if (emailInput) emailInput.addEventListener('input', (e) => {
         state.cardData.email = e.target.value;
         updateChecklistState();
+        updateAllCards();
+    });
+
+    if (websiteInput) websiteInput.addEventListener('input', (e) => {
+        state.cardData.website = e.target.value;
+        updateChecklistState();
+        updateAllCards();
     });
 
     // Tab navigation
-    nameInput.addEventListener('keydown', (e) => {
+    nameInput?.addEventListener('keydown', (e) => {
         if (e.key === 'Tab' || e.key === 'Enter') {
             e.preventDefault();
-            showInput(titleInput, '#aaaaaa');
-            titleInput.focus();
+            showInput(titleInput);
+            titleInput?.focus();
         }
     });
 
-    titleInput.addEventListener('keydown', (e) => {
+    titleInput?.addEventListener('keydown', (e) => {
         if (e.key === 'Tab' || e.key === 'Enter') {
             e.preventDefault();
-            showInput(numberInput, '#ffffff');
-            numberInput.focus();
+            showInput(numberInput);
+            numberInput?.focus();
         }
     });
 
-    numberInput.addEventListener('keydown', (e) => {
+    numberInput?.addEventListener('keydown', (e) => {
         if (e.key === 'Tab' || e.key === 'Enter') {
             e.preventDefault();
-            showInput(emailInput, '#888888');
-            emailInput.focus();
+            showInput(emailInput);
+            emailInput?.focus();
         }
     });
 
-    emailInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') closeCardZoom();
+    emailInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab' || e.key === 'Enter') {
+            e.preventDefault();
+            showInput(websiteInput);
+            websiteInput?.focus();
+        }
+    });
+
+    websiteInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            triggerNextDetailsReveal();
+            closeCardZoom();
+        }
     });
 }
 
-
+      function updateChecklist() {
+    const nameSpan = document.getElementById('check-name');
+    const numSpan = document.getElementById('check-number');
+    const emailSpan = document.getElementById('check-email');
+    
+    nameSpan.textContent = state.cardData.name || 'Click card to enter full name';
+    numSpan.textContent = cleanFieldValue(state.cardData.number) || 'Click card to enter phone';
+    emailSpan.textContent = cleanFieldValue(state.cardData.email) || 'Click card to enter email';
+    
+    // Update completed states
+    const item1 = document.getElementById('check-item-1');
+    const item2 = document.getElementById('check-item-2');
+    const item3 = document.getElementById('check-item-3');
+    
+    if (state.cardData.name) item1.classList.add('completed');
+    else item1.classList.remove('completed');
+    
+    if (state.cardData.number) item2.classList.add('completed');
+    else item2.classList.remove('completed');
+    
+    if (state.cardData.email) item3.classList.add('completed');
+    else item3.classList.remove('completed');
+    
+    // Show/hide next button
+    const nextBtn = document.getElementById('nextBtn');
+    if (state.cardData.name && state.cardData.number && state.cardData.email) {
+        nextBtn.classList.add('visible');
+    } else {
+        nextBtn.classList.remove('visible');
+    }
+}
 
         
 
@@ -462,23 +694,42 @@ document.addEventListener('keydown', (e) => {
                 card.style.animationDelay = `${index * 0.08}s`;
                 
                 let bgStyle = `background: ${mat.color};`;
-                if (mat.id === 'carbon-fiber') {
-                    bgStyle = 'background: linear-gradient(45deg, #1a1a1a 25%, #2a2a2a 25%, #2a2a2a 50%, #1a1a1a 50%, #1a1a1a 75%, #2a2a2a 75%); background-size: 8px 8px;';
-                } else if (mat.id === 'forged-carbon') {
-                    bgStyle = 'background: #2a2a2a;';
+                // Carbon fiber materials get a twill-weave pattern
+                if (mat.cf || mat.id.startsWith('cf-') || mat.id === 'forged-carbon') {
+                    bgStyle = `background: repeating-linear-gradient(45deg, ${mat.color} 0px, ${mat.color} 4px, #2a2a2a 4px, #2a2a2a 8px);`;
                 } else if (mat.id === 'meteorite') {
                     bgStyle = 'background: #4a4a4a;';
                 } else if (mat.id === 'mother-pearl') {
                     bgStyle = 'background: linear-gradient(135deg, #fff, #f0f0f0, #fff);';
+                } else if (['walnut','ebony','mahogany','maple','birch'].includes(mat.id)) {
+                    bgStyle = `background: linear-gradient(160deg, ${mat.color}, ${adjustBrightness(mat.color, -20)});`;
                 }
+
+                const iconColor = isDarkMaterial(mat.id) ? '#c9a962' : '#333';
+                const textColor = isDarkMaterial(mat.id) ? '#c9a962' : '#1a1a1a';
+                const subColor  = isDarkMaterial(mat.id) ? '#aaa' : '#666';
+
+                // NFC icon SVG (top-right of mini-card)
+                const nfcSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2.2" stroke-linecap="round" style="position:absolute;top:5px;right:5px;opacity:0.85;">
+                    <rect x="2" y="5" width="10" height="14" rx="1.5"/>
+                    <path d="M15 8 Q20 12 15 16"/><path d="M18 6 Q25 12 18 18"/>
+                </svg>`;
+
+                // WiFi icon SVG (bottom-right of mini-card)
+                const wifiSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="10" viewBox="0 0 24 20" fill="none" stroke="${iconColor}" stroke-width="2.2" stroke-linecap="round" style="position:absolute;bottom:5px;right:5px;opacity:0.85;">
+                    <path d="M1 7 Q12 -1 23 7"/><path d="M5 12 Q12 7 19 12"/><path d="M9 17 Q12 14 15 17"/>
+                    <circle cx="12" cy="19" r="1.2" fill="${iconColor}" stroke="none"/>
+                </svg>`;
                 
                 card.innerHTML = `
                     <div class="material-preview">
                         ${mat.badge ? `<span class="material-badge">${mat.badge}</span>` : ''}
                         <div class="mini-card" style="${bgStyle}">
                             <div style="position: absolute; top: 8px; left: 10px; width: 18px; height: 14px; background: linear-gradient(135deg, #d4af37, #b8941f); border-radius: 3px;"></div>
-                            <div style="position: absolute; bottom: 15px; left: 10px; font-family: var(--font-serif); font-size: 8px; color: ${isDarkMaterial(mat.id) ? '#c9a962' : '#1a1a1a'}; font-style: italic;">CARDEL</div>
-                            <div style="position: absolute; bottom: 8px; left: 10px; font-size: 5px; color: ${isDarkMaterial(mat.id) ? '#aaa' : '#666'};">•••• 0000</div>
+                            <div style="position: absolute; bottom: 15px; left: 10px; font-family: var(--font-serif); font-size: 8px; color: ${textColor}; font-style: italic;">CARDEL</div>
+                            <div style="position: absolute; bottom: 8px; left: 10px; font-size: 5px; color: ${subColor};">•••• 0000</div>
+                            ${nfcSVG}
+                            ${wifiSVG}
                         </div>
                     </div>
                     <div class="material-info">
@@ -488,16 +739,19 @@ document.addEventListener('keydown', (e) => {
                 grid.appendChild(card);
             });
             
+            // Highlight the correct category tab
             document.querySelectorAll('.category-tab').forEach(tab => {
                 tab.classList.remove('active');
-                if (tab.textContent.toLowerCase().includes(category)) {
+                if (tab.textContent.trim().toLowerCase() === category.toLowerCase() ||
+                    tab.textContent.trim().toLowerCase().includes(category.toLowerCase())) {
                     tab.classList.add('active');
                 }
             });
         }
 
-       function filterMaterials(category) {
+function filterMaterials(category) {
     const grid = document.getElementById('materialsGrid');
+    state.cardData.materialCategory = category;
     
     // Fade out current cards
     const currentCards = grid.querySelectorAll('.material-card');
@@ -539,10 +793,12 @@ document.addEventListener('keydown', (e) => {
             tab.classList.add('active');
         }
     });
+    saveToStorage();
 }
 
         function selectMaterial(materialId, ev) {
             state.cardData.material = materialId;
+            state.cardData.materialCategory = getMaterialCategoryById(materialId);
             
             document.querySelectorAll('.material-card').forEach(card => {
                 card.classList.remove('selected');
@@ -550,24 +806,75 @@ document.addEventListener('keydown', (e) => {
             if (ev && ev.currentTarget) {
                 ev.currentTarget.classList.add('selected');
             } else {
-                document.querySelector(`.material-card[data-mat-id="${materialId}"]`).classList.add('selected');
+                const target = document.querySelector(`.material-card[data-mat-id="${materialId}"]`);
+                if (target) target.classList.add('selected');
             }
             
+            // Force immediate canvas redraw so hero card updates right away
+            if (document.getElementById('heroFrontCanvas')) {
+                drawCard('heroFrontCanvas', 'front', 600, 378);
+                drawCard('heroBackCanvas', 'back', 600, 378);
+            }
+
             updateAllCards();
-            updateOrderSummary();
-            hideInteractionCues(); // Ensure hand/glow go away on material selection
+            saveToStorage();
+            if (typeof updateOrderSummary === 'function') updateOrderSummary();
             
             const mat = getCurrentMaterial();
+            
+            // GSAP Contrast Transition
+            const newIsDark = getYIQBrightness(mat.color || '#000') < 128;
+            const targetCT = newIsDark ? 0 : 1;
+            
+            gsap.to(state.cardData, {
+                contrastTransition: targetCT,
+                duration: 0.8,
+                ease: "power2.inOut",
+                onUpdate: () => {
+                    if (document.getElementById('heroFrontCanvas')) {
+                        drawCard('heroFrontCanvas', 'front', 600, 378);
+                        drawCard('heroBackCanvas', 'back', 600, 378);
+                    }
+                    updateAllCards();
+                }
+            });
+
             showToast(`${mat.name} selected`);
         }
 
       
 
         // Drawing Functions (Canvas)
-       function setup3DTilt() {
+        function setup3DTilt() {
     const container = document.getElementById('cardContainer3d');
     const wrapper = document.getElementById('card3dWrapper');
     if (!container || !wrapper) return;
+    
+    let currentRotateX = 0;
+    let currentRotateY = 0;
+    let targetRotateX = 0;
+    let targetRotateY = 0;
+    let currentScale = 1;
+    let targetScale = 1;
+
+    let rafId = null;
+    let isHovering = false;
+    
+    function animate() {
+        // Luxuriously smooth interpolation (lowered for a heavier, more premium "metal" feel)
+        currentRotateX += (targetRotateX - currentRotateX) * 0.035;
+        currentRotateY += (targetRotateY - currentRotateY) * 0.035;
+        currentScale += (targetScale - currentScale) * 0.035;
+        
+        // Apply transform with perspective, rotation and scaling
+        wrapper.style.transform = `perspective(1200px) rotateX(${currentRotateX}deg) rotateY(${currentRotateY}deg) scale3d(${currentScale}, ${currentScale}, ${currentScale})`;
+        
+        if (isHovering || Math.abs(targetRotateX - currentRotateX) > 0.01 || Math.abs(targetRotateY - currentRotateY) > 0.01 || Math.abs(targetScale - currentScale) > 0.001) {
+            rafId = requestAnimationFrame(animate);
+        } else {
+            rafId = null;
+        }
+    }
     
     container.addEventListener('mousemove', (e) => {
         if (state.isZoomed) return;
@@ -579,77 +886,90 @@ document.addEventListener('keydown', (e) => {
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
         
-        // Increased sensitivity to 15 degrees for a snappier feel
-        const rotateX = (y - centerY) / centerY * -15;
-        const rotateY = (x - centerX) / centerX * 15;
+        // Increased sensitivity (10 degrees max)
+        targetRotateX = (y - centerY) / centerY * -10;
+        targetRotateY = (x - centerX) / centerX * 10;
+        targetScale = 1.06; // "Pop" on hover
         
-        // snappier "spring-like" move to mouse position
-        gsap.to(wrapper, {
-            rotateX: rotateX,
-            rotateY: rotateY,
-            duration: 0.5,
-            ease: "power2.out",
-            overwrite: "auto"
-        });
+        if (!isHovering) {
+            isHovering = true;
+            if (!rafId) animate();
+        }
     });
     
     container.addEventListener('mouseleave', () => {
-        if (state.isZoomed) return;
-        
-        // Spring back effect with overshoot (back.out)
-        gsap.to(wrapper, {
-            rotateX: 0,
-            rotateY: 0,
-            duration: 1.2,
-            ease: "back.out(2.5)",
-            overwrite: "auto"
-        });
+        isHovering = false;
+        targetRotateX = 0;
+        targetRotateY = 0;
+        targetScale = 1.0;
+        if (!rafId) animate();
     });
 }
 
         function updateAllCards() {
-            drawCard('heroFrontCanvas', 'front', 600, 378);
-            drawCard('heroBackCanvas', 'back', 600, 378);
-            
-            // Sync input values with state
-            document.getElementById('inputName').value = state.cardData.name;
-            document.getElementById('inputNumber').value = state.cardData.number;
-            document.getElementById('inputEmail').value = state.cardData.email;
-        }
+            // Draw hero canvases (index.html only — safe to skip if absent)
+            if (document.getElementById('heroFrontCanvas')) {
+                const heroFrontSize = getCanvasRenderSize('heroFrontCanvas', 600, 378);
+                drawCard('heroFrontCanvas', 'front', heroFrontSize.w, heroFrontSize.h);
+            }
+            if (document.getElementById('heroBackCanvas')) {
+                const heroBackSize = getCanvasRenderSize('heroBackCanvas', 600, 378);
+                drawCard('heroBackCanvas', 'back', heroBackSize.w, heroBackSize.h);
+            }
 
-        function drawCard(canvasId, side, w, h) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
-            ctx.scale(dpr, dpr);
-            
-            const mat = getCurrentMaterial();
-            const isDark = isDarkMaterial(mat.id);
-            const textColor = isDark ? '#c9a962' : '#1a1a1a';
-            const subTextColor = isDark ? '#ffffff' : '#1a1a1a';
-            const accentColor = '#c9a962';
-            
-            drawBackground(ctx, w, h, mat);
-            
-            if (side === 'front') {
-                drawFrontSide(ctx, w, h, mat, isDark, textColor, subTextColor, accentColor);
-            } else {
-                drawBackSide(ctx, w, h, mat, isDark, subTextColor, accentColor);
+            // Draw materials page canvases (materials.html only — safe to skip if absent)
+            if (document.getElementById('previewCanvasFront')) {
+                const matFrontSize = getCanvasRenderSize('previewCanvasFront', 600, 378);
+                drawCard('previewCanvasFront', 'front', matFrontSize.w, matFrontSize.h);
+            }
+            if (document.getElementById('previewCanvasBack')) {
+                const matBackSize = getCanvasRenderSize('previewCanvasBack', 600, 378);
+                drawCard('previewCanvasBack', 'back', matBackSize.w, matBackSize.h);
             }
             
-            const borderGrad = ctx.createLinearGradient(0, 0, w, h);
-            borderGrad.addColorStop(0, 'rgba(255,255,255,0.35)');
-            borderGrad.addColorStop(0.5, 'rgba(255,255,255,0)');
-            borderGrad.addColorStop(1, 'rgba(255,255,255,0.15)');
-            ctx.strokeStyle = borderGrad;
-            ctx.lineWidth = 2;
-            ctx.strokeRect(1, 1, w - 2, h - 2);
+            // Sync input values with state — null-check all elements (they vary by page)
+            const inputName   = document.getElementById('inputName');
+            const inputTitle  = document.getElementById('inputTitle');
+            const inputNumber = document.getElementById('inputNumber');
+            const inputEmail  = document.getElementById('inputEmail');
+            const inputWebsite = document.getElementById('inputWebsite');
+
+            if (inputName)    inputName.value    = cleanFieldValue(state.cardData.name)   || '';
+            if (inputTitle)   inputTitle.value   = cleanFieldValue(state.cardData.title)  || '';
+            if (inputNumber)  inputNumber.value  = cleanFieldValue(state.cardData.number) || '';
+            if (inputEmail)   inputEmail.value   = cleanFieldValue(state.cardData.email)  || '';
+            if (inputWebsite) inputWebsite.value = cleanFieldValue(state.cardData.website) || '';
+
+            // Sync input colors to handle light/dark material contrast
+            syncInputColors();
         }
+
+        function syncInputColors() {
+            const colors = getTextColorsForMaterial(state.cardData.material);
+            const inputs = document.querySelectorAll('.card-input-field');
+            
+            inputs.forEach(input => {
+                const color = input.classList.contains('input-title') ? colors.secondary : colors.primary;
+                input.style.color = color;
+                
+                // Also update the caret color for consistent luxury feel
+                input.style.caretColor = colors.accent;
+                
+                // Add text shadow for better separation
+                input.style.textShadow = `0px 1px 3px ${colors.shadow}`;
+            });
+
+            // Update title in sidebar name/title if they have special styling
+            const sidebarItems = ['sidebarName', 'sidebarTitle', 'sidebarNumber', 'sidebarEmail'];
+            sidebarItems.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.value) {
+                    el.closest('.checklist-item')?.classList.add('completed');
+                }
+            });
+        }
+
+
 
         function drawBackground(ctx, w, h, mat) {
             if (mat.id === 'carbon-fiber') {
@@ -775,16 +1095,25 @@ function drawFrontSide(ctx, w, h, mat, isDark, textColor, subTextColor, accentCo
         
         // Name
         ctx.save();
-        ctx.font = `italic ${42 * scale}px "Cormorant Garamond"`;
+        // Use user-selected font, size, and alignment
+        const nameFont = state.cardData.font || "'DM Sans',sans-serif";
+        const nameSize = state.cardData.nameSize || 32;
+        const nameAlign = state.cardData.align || 'center';
+        ctx.font = `italic ${nameSize * scale}px ${nameFont}`;
         ctx.fillStyle = textColor;
-        ctx.textAlign = 'left';
+        ctx.textAlign = nameAlign;
         ctx.fillText(state.cardData.name || 'Your Name', contentX, contentY);
         ctx.restore();
         
         // Title
-        ctx.font = `300 ${13 * scale}px Inter`;
+        ctx.save();
+        const titleFont = state.cardData.font || "'DM Sans',sans-serif";
+        const titleSize = state.cardData.numberSize || 18;
+        ctx.font = `300 ${titleSize * scale}px ${titleFont}`;
         ctx.fillStyle = subTextColor;
+        ctx.textAlign = state.cardData.align || 'center';
         ctx.fillText(state.cardData.title || 'Creative Director', contentX, contentY + 28 * scale);
+        ctx.restore();
         
         // Divider
         ctx.strokeStyle = accentColor;
@@ -796,49 +1125,65 @@ function drawFrontSide(ctx, w, h, mat, isDark, textColor, subTextColor, accentCo
         
         // Contact info
         const contactY = h - 70 * scale;
-        ctx.font = `400 ${12 * scale}px Inter`;
+        // Number (phone)
+        ctx.save();
+        const numberFont = state.cardData.font || "'DM Sans',sans-serif";
+        ctx.font = `400 ${titleSize ? titleSize * scale : 12 * scale}px ${numberFont}`;
         ctx.fillStyle = textColor;
-        ctx.fillText(state.cardData.number || '+1 (555) 000-0000', contentX, contactY);
+        ctx.textAlign = state.cardData.align || 'center';
+        const basicNumber = cleanFieldValue(state.cardData.number);
+        ctx.fillText(basicNumber || '+1 (555) 000-0000', contentX, contactY);
+        ctx.restore();
         
-        ctx.font = `300 ${11 * scale}px Inter`;
+        // Email
+        ctx.save();
+        ctx.font = `300 ${titleSize ? titleSize * 0.85 * scale : 11 * scale}px ${numberFont}`;
         ctx.fillStyle = subTextColor;
-        ctx.fillText(state.cardData.email || 'hello@cardel.com', contentX, contactY + 22 * scale);
+        ctx.textAlign = state.cardData.align || 'center';
+        const basicEmail = cleanFieldValue(state.cardData.email);
+        ctx.fillText(basicEmail || 'hello@cardel.com', contentX, contactY + 22 * scale);
+        ctx.restore();
     }
+    
     
     // Icons (always show)
     const iconColor = isDark ? '#c9a962' : '#1a1a1a';
-    const iconSize = 36 * scale;
+    const iconSize = 32 * scale;
     
     // NFC icon
-    const nfcX = w - 85 * scale;
-    const nfcY = 55 * scale;
+    const nfcX = w - 58 * scale;
+    const nfcY = 48 * scale;
     ctx.save();
     ctx.strokeStyle = iconColor;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(nfcX - 12, nfcY - 12, 24, 24);
+    ctx.lineWidth = iconSize * 0.14;
+    ctx.lineCap = 'round';
+    ctx.strokeRect(nfcX - iconSize * 0.35, nfcY - iconSize * 0.35, iconSize * 0.7, iconSize * 0.7);
     for(let i = 1; i <= 3; i++){
+        const r = iconSize * 0.32 + i * iconSize * 0.10;
         ctx.beginPath();
-        ctx.arc(nfcX + 2, nfcY, 8 + i * 3, Math.PI * 1.1, Math.PI * 1.9);
+        ctx.arc(nfcX + iconSize * 0.08, nfcY, r, Math.PI * 1.05, Math.PI * 1.95, false);
         ctx.stroke();
     }
     ctx.restore();
     
     // WiFi icon
-    const wifiX = w - 85 * scale;
-    const wifiY = h - 55 * scale;
+    const wifiX = w - 58 * scale;
+    const wifiY = h - 48 * scale;
     ctx.save();
     ctx.strokeStyle = iconColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = iconSize * 0.13;
+    ctx.lineCap = 'round';
     for(let i = 1; i <= 4; i++){
-        ctx.globalAlpha = 0.3 + i * 0.15;
+        const r = iconSize * 0.18 * i;
+        ctx.globalAlpha = 0.35 + i * 0.16;
         ctx.beginPath();
-        ctx.arc(wifiX, wifiY, 6 + i * 4, Math.PI * 1.2, Math.PI * 1.8);
+        ctx.arc(wifiX, wifiY - iconSize * 0.12, r, Math.PI * 1.2, Math.PI * 1.8, false);
         ctx.stroke();
     }
     ctx.globalAlpha = 1;
     ctx.fillStyle = iconColor;
     ctx.beginPath();
-    ctx.arc(wifiX, wifiY, 3, 0, Math.PI * 2);
+    ctx.arc(wifiX, wifiY - iconSize * 0.12, iconSize * 0.09, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 }
@@ -924,11 +1269,27 @@ function drawBackSide(ctx, w, h, mat, isDark, subTextColor, accentColor) {
             ctx.fillRect(0, 0, w, h);
         }
 
-// HDR-Quality Card Rendering
-function drawCard(canvasId, side, w, h) {
+function getCanvasRenderSize(canvasId, fallbackW = 600, fallbackH = 378) {
     const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
+    if (!canvas) return { w: fallbackW, h: fallbackH };
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.round(rect.width);
+    const h = Math.round(rect.height);
+    if (w > 0 && h > 0) return { w, h };
+    return { w: fallbackW, h: fallbackH };
+}
+
+function isIndexPageContext() {
+    return !!document.getElementById('cardContainer3d');
+}
+
+// HDR-Quality Card Rendering
+function drawCard(canvasId, side, w, h, materialOverride = null) {
+    sanitizeCardTextFields();
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof canvas.getContext !== 'function') return;
     
+    // Main visible canvas context
     const ctx = canvas.getContext('2d', { 
         alpha: false,
         desynchronized: true 
@@ -936,29 +1297,116 @@ function drawCard(canvasId, side, w, h) {
     
     // High DPI for crisp rendering
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    ctx.scale(dpr, dpr);
+    const tw = Math.floor(w * dpr);
+    const th = Math.floor(h * dpr);
+
+    if (canvas.width !== tw || canvas.height !== th) {
+        canvas.width = tw;
+        canvas.height = th;
+    }
     
-    const mat = getCurrentMaterial();
+    if (!offCanvas) return;
+    
+    // Only resize if needed to prevent flickering context resets
+    if (offCanvas.width !== tw || offCanvas.height !== th) {
+        offCanvas.width = tw;
+        offCanvas.height = th;
+    }
+    
+    // Reset buffer transform, globalAlpha & clear it before drawing
+    offCtx.setTransform(1, 0, 0, 1, 0, 0);
+    offCtx.globalAlpha = 1;
+    offCtx.globalCompositeOperation = 'source-over';
+    offCtx.clearRect(0, 0, tw, th);
+    offCtx.scale(dpr, dpr);
+    
+    const mat = getCurrentMaterial(materialOverride || state.cardData.material);
     const isDark = isDarkMaterial(mat.id);
     
-    // Enable high-quality image smoothing
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    // Enable high-quality image smoothing on the off-screen buffer
+    offCtx.imageSmoothingEnabled = true;
+    offCtx.imageSmoothingQuality = 'high';
     
-    // Draw with HDR-style lighting
-    drawHDRBackground(ctx, w, h, mat, isDark);
+    const indexViewOnly = isIndexPageContext();
+
+    // Draw with HDR-style lighting onto the buffer
+    drawHDRBackground(offCtx, w, h, mat, isDark);
+    
+    // Design overlay layer (now drawn as a background skin below the text content)
+    drawDesignOverlay(offCtx, w, h, indexViewOnly);
     
     if (side === 'front') {
-        drawHDRFrontSide(ctx, w, h, mat, isDark);
+        drawHDRFrontSide(offCtx, w, h, mat, isDark, indexViewOnly);
     } else {
-        drawHDRBackSide(ctx, w, h, mat, isDark);
+        drawHDRBackSide(offCtx, w, h, mat, isDark, indexViewOnly);
     }
     
     // Premium border with gradient
-    drawPremiumBorder(ctx, w, h);
+    drawPremiumBorder(offCtx, w, h);
+    
+    // Flicker-free paint: flush buffer to visible canvas
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(offCanvas, 0, 0);
 }
+
+// ===== DESIGN UPLOAD OVERLAY =====
+// Renders user-uploaded SVG or transparent PNG across the full card area
+function drawDesignOverlay(ctx, w, h, indexViewOnly = false) {
+    if (indexViewOnly) return;
+    const img = state.cardData.designImg;
+    if (!img || !img.width || !img.height) return;
+
+    // "Full Bleed" — occupies the entire card area
+    const drawX = 0;
+    const drawY = 0;
+    const drawW = w;
+    const drawH = h;
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    // Keep design fully solid while card is in click-to-edit (zoom) mode
+    ctx.globalAlpha = state.isZoomed ? 1 : (state.cardData.designOpacity ?? 0.85);
+    
+    // Use drawImage to fill the entire card bounds
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    ctx.restore();
+}
+window.drawDesignOverlay = drawDesignOverlay;
+
+// ===== DESIGN UPLOAD HANDLER =====
+function applyDesignUpload(file) {
+    if (!file) return;
+    const validTypes = ['image/png', 'image/svg+xml'];
+    if (!validTypes.includes(file.type)) {
+        if (typeof showToast === 'function') showToast('Only SVG or transparent PNG allowed');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        state.cardData.designDataUrl = dataUrl;
+        const img = new Image();
+        img.onload = () => {
+            state.cardData.designImg = img;
+            if (typeof updateAllCards === 'function') updateAllCards();
+            if (typeof saveToStorage === 'function') saveToStorage();
+            if (typeof showToast === 'function') showToast('Design applied to card');
+        };
+        img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+}
+window.applyDesignUpload = applyDesignUpload;
+
+function removeDesign() {
+    state.cardData.designDataUrl = null;
+    state.cardData.designImg = null;
+    if (typeof updateAllCards === 'function') updateAllCards();
+    if (typeof saveToStorage === 'function') saveToStorage();
+    if (typeof showToast === 'function') showToast('Design removed');
+}
+window.removeDesign = removeDesign;
 
 function drawHDRBackground(ctx, w, h, mat, isDark) {
     // Base material with depth
@@ -1316,17 +1764,17 @@ function drawPremiumBorder(ctx, w, h) {
 }
 
 function addFilmGrain(ctx, w, h, intensity) {
-    const imageData = ctx.getImageData(0, 0, w, h);
-    const data = imageData.data;
-    
-    for (let i = 0; i < data.length; i += 4) {
-        const noise = (Math.random() - 0.5) * intensity * 255;
-        data[i] = Math.max(0, Math.min(255, data[i] + noise));
-        data[i+1] = Math.max(0, Math.min(255, data[i+1] + noise));
-        data[i+2] = Math.max(0, Math.min(255, data[i+2] + noise));
-    }
-    
-    ctx.putImageData(imageData, 0, 0);
+    // Use a subtle diagonal gradient instead of random noise to avoid per-frame flicker
+    ctx.save();
+    ctx.globalAlpha = intensity * 0.4;
+    ctx.globalCompositeOperation = 'overlay';
+    const grad = ctx.createLinearGradient(0, 0, w * 0.6, h * 0.4);
+    grad.addColorStop(0, 'rgba(255,255,255,0.06)');
+    grad.addColorStop(0.5, 'rgba(255,255,255,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.04)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
 }
 
 // Add this function to your JavaScript
@@ -1355,94 +1803,177 @@ function getContrastColor(backgroundColor) {
     return luminance > 0.179 ? '#1a1a1a' : '#ffffff';
 }
 
-// Enhanced version that also returns secondary text color
-function getTextColorsForMaterial(materialColor) {
-    const primary = getContrastColor(materialColor);
+// Enhanced version that also returns secondary text color and accent
+function getYIQBrightness(hex) {
+    const r = parseInt(hex.substring(1, 3), 16);
+    const g = parseInt(hex.substring(3, 5), 16);
+    const b = parseInt(hex.substring(5, 7), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+// Enhanced version that also returns secondary text color and accent
+function getTextColorsForMaterial(materialId) {
+    const mat = getCurrentMaterial(materialId || state.cardData.material);
+    const brightness = getYIQBrightness(mat.color || '#999999');
+    const isDark = brightness < 128;
+
     return {
-        primary: primary,
-        secondary: primary === '#1a1a1a' ? '#555555' : '#aaaaaa',
-        accent: '#c9a962' // Keep gold accent consistent
+        primary: isDark ? '#f7e7b0' : '#171717',
+        secondary: isDark ? '#fff9ea' : '#2a2a2a',
+        accent: isDark ? '#e1bf70' : '#8a7038',
+        shadow: isDark ? 'rgba(0,0,0,0.94)' : 'rgba(0,0,0,0.14)'
     };
 }
 
-function drawHDRFrontSide(ctx, w, h, mat, isDark) {
+function drawHDRFrontSide(ctx, w, h, mat, isDark, indexViewOnly = false) {
     const scale = w / 600;
     
-    // Use the existing isDark check but make text colors more robust
-    const textColor = isDark ? '#c9a962' : '#1a1a1a';
-    const subTextColor = isDark ? '#ffffff' : '#1a1a1a';
-    const accentColor = '#c9a962';
+    // Function to interpolate colors for smooth transition
+    const interpColor = (c1, c2, f) => {
+        const r1 = parseInt(c1.substring(1,3), 16), g1 = parseInt(c1.substring(3,5), 16), b1 = parseInt(c1.substring(5,7), 16);
+        const r2 = parseInt(c2.substring(1,3), 16), g2 = parseInt(c2.substring(3,5), 16), b2 = parseInt(c2.substring(5,7), 16);
+        const r = Math.round(r1 + (r2 - r1) * f), g = Math.round(g1 + (g2 - g1) * f), b = Math.round(b1 + (b2 - b1) * f);
+        return `rgb(${r},${g},${b})`;
+    };
+
+    const contrast = getTextColorsForMaterial(mat.id);
+    const textColor = contrast.primary;
+    const subTextColor = contrast.secondary;
+    const accentColor = contrast.accent;
+
+    // Multi-stop luxury shadow for maximum separation
+    const applyLuxuryShadow = (blurScale = 1) => {
+        ctx.shadowColor = contrast.shadow;
+        ctx.shadowBlur = 4 * scale * blurScale;
+        ctx.shadowOffsetY = 1 * scale * blurScale;
+    };
     
-    // For light materials, override to ensure visibility
-    const isLightMaterial = ['maple', 'mother-pearl', 'silver-metal'].includes(mat.id);
-    const finalTextColor = isLightMaterial ? '#1a1a1a' : textColor;
-    const finalSubTextColor = isLightMaterial ? '#555555' : subTextColor;
-    
-    // Corner accents
-    drawCornerAccent(ctx, 30 * scale, 30 * scale, 20 * scale, accentColor, true);
-    drawCornerAccent(ctx, w - 30 * scale, h - 30 * scale, 20 * scale, accentColor, false);
+    if (!indexViewOnly) {
+        // Corner accents
+        drawCornerAccent(ctx, 30 * scale, 30 * scale, 20 * scale, accentColor, true);
+        drawCornerAccent(ctx, w - 30 * scale, h - 30 * scale, 20 * scale, accentColor, false);
+    }
     
     // Only draw text when not zoomed (this hides placeholder text when editing)
     if (!state.isZoomed) {
         const contentX = 60 * scale;
         const contentY = h / 2 - 20 * scale;
+
+        if (!indexViewOnly) {
+            // Luxury Branding (Logo or Monogram)
+            const brandingY = contentY - (state.cardData.logoSize || 32) * scale * 1.5 - 25 * scale;
+            const lp = state.cardData.logoPos || 'center';
+            const bSize = (state.cardData.logoSize || 32) * scale * 1.5;
+            let bx = lp === 'center' ? (w - bSize) / 2 : (lp === 'right' ? w - bSize - 60*scale : 60*scale);
+
+            const lType = (state.cardData.logoImg && state.cardData.logoImg.width > 0) ? 'logo' : (state.cardData.logoType || 'initials');
+
+            if (lType === 'logo' && state.cardData.logoImg && state.cardData.logoImg.width > 0) {
+                let lw = bSize;
+                let lh = state.cardData.logoImg.height * (lw / state.cardData.logoImg.width);
+                let lx = lp === 'center' ? (w - lw) / 2 : (lp === 'right' ? w - lw - 60*scale : 60*scale);
+                let ly = contentY - lh - 25 * scale;
+                ctx.globalAlpha = 1; 
+                ctx.drawImage(state.cardData.logoImg, lx, ly, lw, lh);
+            } else if (lType === 'initials' && state.cardData.initials) {
+                ctx.save();
+                ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 5 * scale;
+                ctx.beginPath();
+                ctx.arc(bx + bSize/2, brandingY + bSize/2, bSize/2, 0, Math.PI * 2);
+                ctx.strokeStyle = accentColor;
+                ctx.lineWidth = 1 * scale;
+                ctx.stroke();
+                ctx.font = `300 ${bSize * 0.35}px "Playfair Display"`;
+                ctx.fillStyle = textColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(state.cardData.initials.toUpperCase(), bx + bSize/2, brandingY + bSize/2);
+                ctx.restore();
+            }
+        }
         
-        // Name with shadow for depth
+        const textAlign = indexViewOnly ? 'left' : (state.cardData.align || 'left');
+        const leftX = 60 * scale;
+        const centerX = w / 2;
+        const rightX = w - 70 * scale; // Increased padding for right alignment
+        const textX = textAlign === 'center' ? centerX : (textAlign === 'right' ? rightX : leftX);
+        const nameFont = indexViewOnly ? "'Cormorant Garamond',serif" : (state.cardData.font || "'DM Sans',sans-serif");
+        const nameSize = indexViewOnly ? 36 : (Number(state.cardData.nameSize) || 36);
+        const numberSize = indexViewOnly ? 18 : (Number(state.cardData.numberSize) || 18);
+
+        // Name with heavy luxury depth shadow
         ctx.save();
-        ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.2)';
-        ctx.shadowBlur = 4 * scale;
-        ctx.shadowOffsetY = 2 * scale;
-        ctx.font = `italic ${42 * scale}px "Cormorant Garamond"`;
-        ctx.fillStyle = finalTextColor;
-        ctx.textAlign = 'left';
-        
-        // Use state data or fallback to placeholder
+        applyLuxuryShadow(1.5);
+        ctx.font = `italic ${nameSize * scale}px ${nameFont}`;
+        ctx.fillStyle = textColor;
+        ctx.textAlign = textAlign;
         const displayName = state.cardData.name || 'Your Name';
-        ctx.fillText(displayName, contentX, contentY);
+        ctx.fillText(displayName, textX, contentY);
         ctx.restore();
         
         // Title
-        ctx.font = `300 ${13 * scale}px Inter`;
-        ctx.fillStyle = finalSubTextColor;
-        ctx.letterSpacing = '0.2em';
+        ctx.save();
+        applyLuxuryShadow(0.8);
+        ctx.textAlign = textAlign;
+        ctx.textBaseline = 'alphabetic';
+        ctx.font = `300 ${numberSize * scale}px ${nameFont}`;
+        ctx.fillStyle = subTextColor;
         const displayTitle = state.cardData.title || 'Creative Director';
-        ctx.fillText(displayTitle, contentX, contentY + 28 * scale);
+        ctx.fillText(displayTitle, textX, contentY + 28 * scale);
+        ctx.restore();
         
         // Divider
-        const divGrad = ctx.createLinearGradient(contentX, 0, contentX + 80 * scale, 0);
+        const dividerStartX = textAlign === 'left' ? textX : (textAlign === 'right' ? textX - 80 * scale : textX - 40 * scale);
+        const dividerEndX = textAlign === 'left' ? textX + 80 * scale : (textAlign === 'right' ? textX : textX + 40 * scale);
+        const divGrad = ctx.createLinearGradient(dividerStartX, 0, dividerEndX, 0);
         divGrad.addColorStop(0, accentColor);
         divGrad.addColorStop(1, isDark ? 'rgba(201,169,98,0.3)' : 'rgba(201,169,98,0.6)');
         ctx.strokeStyle = divGrad;
         ctx.lineWidth = 1.5 * scale;
         ctx.beginPath();
-        ctx.moveTo(contentX, contentY + 45 * scale);
-        ctx.lineTo(contentX + 80 * scale, contentY + 45 * scale);
+        ctx.moveTo(dividerStartX, contentY + 45 * scale);
+        ctx.lineTo(dividerEndX, contentY + 45 * scale);
         ctx.stroke();
         
-        // Contact info
+        // Contact info with subtle shadows
         const contactY = h - 70 * scale;
         
         ctx.save();
-        ctx.shadowColor = isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)';
-        ctx.shadowBlur = 2 * scale;
-        ctx.font = `400 ${12 * scale}px Inter`;
-        ctx.fillStyle = finalTextColor;
-        const displayNumber = state.cardData.number || '+1 (555) 000-0000';
-        ctx.fillText(displayNumber, contentX, contactY);
-        ctx.restore();
+        applyLuxuryShadow(0.5);
+        ctx.font = `400 ${numberSize * scale}px ${nameFont}`;
+        ctx.fillStyle = textColor;
+        ctx.textAlign = textAlign;
+        ctx.textBaseline = 'alphabetic';
+        const displayNumber = cleanFieldValue(state.cardData.number) || '+1 (555) 000-0000';
+        ctx.fillText(displayNumber, textX, contactY);
         
-        ctx.font = `300 ${11 * scale}px Inter`;
-        ctx.fillStyle = finalSubTextColor;
-        const displayEmail = state.cardData.email || 'hello@cardel.com';
-        ctx.fillText(displayEmail, contentX, contactY + 22 * scale);
+        ctx.font = `300 ${Math.max(10, numberSize * 0.85) * scale}px ${nameFont}`;
+        ctx.fillStyle = subTextColor;
+        const displayEmail = cleanFieldValue(state.cardData.email) || 'hello@cardel.com';
+        ctx.fillText(displayEmail, textX, contactY + 22 * scale);
+
+        // Website URL
+        const displayWebsite = cleanFieldValue(state.cardData.website) || 'www.cardel.com';
+        if (displayWebsite) {
+            ctx.font = `300 ${Math.max(9, numberSize * 0.8) * scale}px ${nameFont}`;
+            ctx.fillStyle = subTextColor;
+            ctx.globalAlpha = 0.8;
+            ctx.fillText(displayWebsite, textX, contactY + 40 * scale);
+            ctx.globalAlpha = 1;
+        }
+        ctx.restore();
         // ─── Improved icons: NFC with text + upside-down waves (opening upwards) ────
-const iconColor = isLightMaterial ? '#1a1a1a' : (isDark ? '#c9a962' : '#ffffff');
-const iconSize = 36 * scale;   // slightly smaller so text fits nicely
+const iconColor = textColor;
+const iconSize = 32 * scale;
+
+// Dynamic Icon Positioning: Move to opposite side of text alignment
+const iconX = textAlign === 'right' ? 58 * scale : w - 58 * scale;
 
 // ── NFC icon + "NFC" text ── top right
 {
-    const centerX = w - 85 * scale;
-    const centerY = 55 * scale;
+    const centerX = iconX;
+    const centerY = 48 * scale;
     
     // NFC symbol
     ctx.save();
@@ -1470,8 +2001,8 @@ const iconSize = 36 * scale;   // slightly smaller so text fits nicely
 
 // ── Upside-down Wi-Fi / waves icon (curves opening upwards) ── bottom right
 {
-    const centerX = w - 85 * scale;
-    const centerY = h - 55 * scale;
+    const centerX = iconX;
+    const centerY = h - 48 * scale;
     
     ctx.save();
     ctx.strokeStyle = iconColor;
@@ -1496,62 +2027,82 @@ const iconSize = 36 * scale;   // slightly smaller so text fits nicely
     
     ctx.restore();
 }
+
         
     }
     
     
     // Geometric decoration
-    drawGeometricDecoration(ctx, w, h, isDark);
+    if (!indexViewOnly) drawGeometricDecoration(ctx, w, h, isDark);
 }
 
-function drawHDRBackSide(ctx, w, h, mat, isDark) {
+function drawHDRBackSide(ctx, w, h, mat, isDark, indexViewOnly = false) {
     const scale = w / 600;
-    const accentColor = '#c9a962';
     
-    // Elegant circle frame with gradient
-    const centerX = w / 2;
-    const centerY = h / 2;
+    const interpColor = (c1, c2, f) => {
+        const r1 = parseInt(c1.substring(1,3), 16), g1 = parseInt(c1.substring(3,5), 16), b1 = parseInt(c1.substring(5,7), 16);
+        const r2 = parseInt(c2.substring(1,3), 16), g2 = parseInt(c2.substring(3,5), 16), b2 = parseInt(c2.substring(5,7), 16);
+        const r = Math.round(r1 + (r2 - r1) * f), g = Math.round(g1 + (g2 - g1) * f), b = Math.round(b1 + (b2 - b1) * f);
+        return `rgb(${r},${g},${b})`;
+    };
+
+    const cf = indexViewOnly
+        ? (isDark ? 0 : 1)
+        : (state.cardData.contrastTransition !== undefined ? state.cardData.contrastTransition : (isDark ? 0 : 1));
+    const accentColor = interpColor('#c9a962', '#8a7038', cf);
     
-    // Outer ring with glow
-    ctx.save();
-    ctx.shadowColor = 'rgba(201,169,98,0.3)';
-    ctx.shadowBlur = 15 * scale;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 80 * scale, 0, Math.PI * 2);
-    ctx.strokeStyle = accentColor;
-    ctx.lineWidth = 1 * scale;
-    ctx.globalAlpha = 0.4;
-    ctx.stroke();
-    ctx.restore();
-    
-    // Inner ring
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 60 * scale, 0, Math.PI * 2);
-    ctx.strokeStyle = accentColor;
-    ctx.lineWidth = 0.5 * scale;
-    ctx.globalAlpha = 0.2;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    
-    // Monogram with metallic effect
-    drawMetallicText(ctx, 'C', centerX, centerY, 
-        `300 ${48 * scale}px "Cormorant Garamond"`, accentColor, true);
-    
-    // Tagline
-    ctx.font = `italic ${12 * scale}px "Cormorant Garamond"`;
-    ctx.fillStyle = isDark ? '#aaaaaa' : '#666666';
-    ctx.textAlign = 'center';
-    ctx.fillText('Bespoke Identity', centerX, centerY + 50 * scale);
-    
-    // Corner accents
-    drawCornerAccent(ctx, w - 30 * scale, 30 * scale, 20 * scale, accentColor, true, true);
-    drawCornerAccent(ctx, 30 * scale, h - 30 * scale, 20 * scale, accentColor, false, true);
+    if (!indexViewOnly) {
+        // Corner accents
+        drawCornerAccent(ctx, w - 30 * scale, 30 * scale, 20 * scale, accentColor, true, true);
+        drawCornerAccent(ctx, 30 * scale, h - 30 * scale, 20 * scale, accentColor, false, true);
+    }
     
    
     
-    // QR code if enabled
-    if (state.orderConfig.addons.qr) {
-        drawPremiumQR(ctx, 60 * scale, 60 * scale, 50 * scale);
+    const white = '#ffffff';
+    const black = '#1a1a1a';
+    const textColor = interpColor(white, black, cf);
+
+    // QR code — reads from state.cardData (set by materials page controls)
+    const showQR = indexViewOnly
+        ? false
+        : (state.cardData.showQR !== undefined ? state.cardData.showQR : state.orderConfig.addons.qr);
+    let qrLayout = null;
+    if (showQR) {
+        const qrSizePx = (state.cardData.qrSize || 65) * scale;
+        const qrPos = state.cardData.qrPos || 'center';
+        const qrSidePad = 60 * scale;
+        const qrX = qrPos === 'center' ? (w - qrSizePx) / 2
+                   : qrPos === 'right'  ? w - qrSizePx - qrSidePad
+                   : qrSidePad;
+        const qrY = h * 0.5 - qrSizePx * 0.56;
+        const qrUrl = state.cardData.qrUrl || '';
+        // Blend QR ink with selected material while keeping strong scan contrast
+        const matBase = (mat && mat.color) ? mat.color : (isDark ? '#2a2a2a' : '#d8d8d8');
+        const qrInkColor = adjustBrightness(matBase, isDark ? 62 : -68);
+        drawPremiumQR(ctx, qrX, qrY, qrSizePx, qrInkColor, qrUrl, {
+            showPlate: true,
+            plateColor: isDark ? 'rgba(245,245,245,0.95)' : 'rgba(255,255,255,0.92)',
+            plateBorder: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.18)',
+            shadowColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.12)'
+        });
+        qrLayout = { x: qrX, y: qrY, size: qrSizePx };
+    }
+
+    // Website URL (under QR like the reference image)
+    const backWebsite = cleanFieldValue(state.cardData.website);
+    if (((!indexViewOnly && state.cardData.showWebsiteBack) || indexViewOnly) && backWebsite) {
+        ctx.save();
+        const backWebsiteSize = indexViewOnly ? 12 : (Number(state.cardData.backWebsiteSize) || 12);
+        ctx.font = `400 ${backWebsiteSize * scale}px "Cormorant Garamond"`;
+        ctx.fillStyle = isDark ? 'rgba(240,240,240,0.92)' : 'rgba(30,30,30,0.9)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic';
+        ctx.globalAlpha = 1;
+        const webX = w / 2;
+        const webY = h - Math.max(16, backWebsiteSize + 8) * scale;
+        ctx.fillText(backWebsite, webX, webY);
+        ctx.restore();
     }
 }
 
@@ -1628,45 +2179,132 @@ function drawGeometricDecoration(ctx, w, h, isDark) {
     ctx.restore();
 }
 
-function drawPremiumQR(ctx, x, y, size) {
-    // QR background with shadow
+let _qrDataCache = {};
+function getQRCodeModules(text) {
+    if (!text) text = "https://cardel.com";
+    if (_qrDataCache[text]) return _qrDataCache[text];
+
+    try {
+        if (typeof QRCode === 'undefined') {
+            return null;
+        }
+        // Temporary div to generate QR data
+        const tempDiv = document.createElement('div');
+        const qrc = new QRCode(tempDiv, {
+            text: text,
+            width: 128,
+            height: 128,
+            correctLevel: QRCode.CorrectLevel.H // Level H for maximum robustness
+        });
+        // Access modules from David Shim library
+        const modules = qrc._oQRCode.modules;
+        if (modules) {
+            _qrDataCache[text] = modules;
+            return modules;
+        }
+    } catch (e) {
+        console.warn("QR missing modules:", e);
+    }
+    return null;
+}
+
+function drawPremiumQR(ctx, x, y, size, qrColor, url, options = {}) {
+    qrColor = qrColor || '#1a1a1a';
+    url = url || '';
+    const shadowColor = options.shadowColor || 'rgba(0,0,0,0.25)';
+    const showPlate = !!options.showPlate;
+    const plateColor = options.plateColor || 'rgba(255,255,255,0.95)';
+    const plateBorder = options.plateBorder || 'rgba(0,0,0,0.2)';
+
+    if (showPlate) {
+        const pad = Math.round(size * 0.12);
+        const radius = Math.max(6, size * 0.06);
+        const px = x - pad;
+        const py = y - pad;
+        const pw = size + pad * 2;
+        const ph = size + pad * 2;
+
+        ctx.save();
+        ctx.shadowColor = shadowColor;
+        ctx.shadowBlur = Math.max(4, size * 0.12);
+        ctx.fillStyle = plateColor;
+        ctx.beginPath();
+        ctx.moveTo(px + radius, py);
+        ctx.lineTo(px + pw - radius, py);
+        ctx.quadraticCurveTo(px + pw, py, px + pw, py + radius);
+        ctx.lineTo(px + pw, py + ph - radius);
+        ctx.quadraticCurveTo(px + pw, py + ph, px + pw - radius, py + ph);
+        ctx.lineTo(px + radius, py + ph);
+        ctx.quadraticCurveTo(px, py + ph, px, py + ph - radius);
+        ctx.lineTo(px, py + radius);
+        ctx.quadraticCurveTo(px, py, px + radius, py);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = plateBorder;
+        ctx.lineWidth = Math.max(1, size * 0.018);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // Get real modules from library
+    const modules = getQRCodeModules(url);
+    
+    // Draw pattern
+    ctx.fillStyle = qrColor;
     ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.2)';
-    ctx.shadowBlur = 5;
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(x - 5, y - 5, size + 10, size + 10);
-    ctx.restore();
-    
-    // QR pattern
-    ctx.fillStyle = '#1a1a1a';
-    const moduleSize = size / 7;
-    
-    // Simplified QR with position patterns
-    for (let i = 0; i < 7; i++) {
-        for (let j = 0; j < 7; j++) {
-            // Corner patterns
-            const isCorner = (i < 2 && j < 2) || (i > 4 && j < 2) || (i < 2 && j > 4);
-            // Center pattern
-            const isCenter = (i >= 2 && i <= 4 && j >= 2 && j <= 4);
-            // Random data
-            const isData = Math.random() > 0.5;
-            
-            if (isCorner || isCenter || isData) {
-                ctx.fillRect(x + i * moduleSize, y + j * moduleSize, 
-                    moduleSize - 1, moduleSize - 1);
+    ctx.shadowColor = shadowColor;
+    ctx.shadowBlur = Math.max(2, size * 0.06);
+    if (modules) {
+        const count = modules.length;
+        const mSize = size / count;
+        const r = mSize * 0.2; // Module rounding radius
+
+        for (let row = 0; row < count; row++) {
+            for (let col = 0; col < count; col++) {
+                if (modules[row][col]) {
+                    const mx = x + col * mSize;
+                    const my = y + row * mSize;
+                    
+                    // Detect finder patterns (corners) to make them solid for better recognition
+                    const isFinder = (row < 7 && col < 7) || (row < 7 && col >= count - 7) || (row >= count - 7 && col < 7);
+                    
+                    if (isFinder) {
+                        // Finder modules: use squares to ensure the three big boxes are standard
+                        ctx.fillRect(mx - 0.1, my - 0.1, mSize + 0.2, mSize + 0.2);
+                    } else {
+                        // Standard modules: Rounded squares that touch
+                        ctx.beginPath();
+                        ctx.moveTo(mx + r, my);
+                        ctx.lineTo(mx + mSize - r, my);
+                        ctx.quadraticCurveTo(mx + mSize, my, mx + mSize, my + r);
+                        ctx.lineTo(mx + mSize, my + mSize - r);
+                        ctx.quadraticCurveTo(mx + mSize, my + mSize, mx + mSize - r, my + mSize);
+                        ctx.lineTo(mx + r, my + mSize);
+                        ctx.quadraticCurveTo(mx, my + mSize, mx, my + mSize - r);
+                        ctx.lineTo(mx, my + r);
+                        ctx.quadraticCurveTo(mx, my, mx + r, my);
+                        ctx.fill();
+                    }
+                }
             }
         }
+    } else {
+        // Fallback or waiting for load
+        ctx.shadowBlur = 0;
+        ctx.textAlign = 'center';
+        ctx.font = '10px Inter';
+        ctx.fillStyle = '#888';
+        ctx.fillText("GEN...", x + size/2, y + size/2);
     }
-    
-    // Label
-    ctx.font = '300 8px Inter';
-    ctx.fillStyle = '#888';
-    ctx.textAlign = 'center';
-    ctx.fillText('SCAN TO CONNECT', x + size/2, y + size + 15);
-}       function isDarkMaterial(id) {
-            const darkMaterials = ['black-metal', 'carbon-fiber', 'forged-carbon', 'walnut', 'ebony', 'bamboo', 'meteorite'];
-            return darkMaterials.includes(id);
-        }
+    ctx.restore();
+}
+
+function isDarkMaterial(id) {
+    const mat = getCurrentMaterial(id || state.cardData.material);
+    if (!mat) return true;
+    return getYIQBrightness(mat.color || '#000000') < 128;
+}
 
         function adjustBrightness(color, percent) {
             const num = parseInt(color.replace('#', ''), 16);
@@ -1677,20 +2315,16 @@ function drawPremiumQR(ctx, x, y, size) {
             return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
         }
 
-        function getCurrentMaterial() {
+        function getCurrentMaterial(materialId) {
+            const selectedMaterialId = materialId || state.cardData.material;
             for (const cat of Object.keys(state.materials)) {
-                const mat = state.materials[cat].find(m => m.id === state.cardData.material);
+                const mat = state.materials[cat].find(m => m.id === selectedMaterialId);
                 if (mat) return mat;
             }
             return state.materials.metal[0];
         }
 
-        function showToast(message) {
-            const t = document.getElementById('toast');
-            t.textContent = message;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
+
 // Intersection Observer for scroll animations and card cloning
 document.addEventListener('DOMContentLoaded', function() {
     const observerOptions = {
@@ -1787,46 +2421,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Render card for steps section
 function renderStepsCard() {
-    const canvas = document.getElementById('stepsCardCanvas');
-    if (!canvas || typeof drawCard !== 'function') return;
-    
-    // Set canvas size with device pixel ratio for sharpness
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = 380 * dpr;
-    canvas.height = 240 * dpr;
-    
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-    
-    // Draw the card using existing function logic
-    drawPreviewCard(ctx, 380, 240, 'front');
+    if (typeof drawCard !== 'function') return;
+    const size = getCanvasRenderSize('stepsCardCanvas', 380, 240);
+    drawCard('stepsCardCanvas', 'front', size.w, size.h);
 }
 
 // Render card for partners section
 function renderPartnersCard() {
-    const canvas = document.getElementById('partnersCardCanvas');
-    if (!canvas || typeof drawCard !== 'function') return;
-    
-    // Set canvas size with device pixel ratio for sharpness
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = 360 * dpr;
-    canvas.height = 225 * dpr;
-    
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-    
-    // Draw the card using existing function logic
-    drawPreviewCard(ctx, 360, 225, 'front');
+    if (typeof drawCard !== 'function') return;
+    const size = getCanvasRenderSize('partnersCardCanvas', 360, 225);
+    drawCard('partnersCardCanvas', 'front', size.w, size.h);
 }
 
 // Draw preview card using existing state and materials
 function drawPreviewCard(ctx, w, h, side) {
     const mat = getCurrentMaterial();
     const isDark = isDarkMaterial(mat.id);
-    const textColor = isDark ? '#c9a962' : '#1a1a1a';
-    const subTextColor = isDark ? '#ffffff' : '#1a1a1a';
-    const accentColor = '#c9a962';
+    const contrast = getTextColorsForMaterial(mat.id);
+    const textColor = contrast.primary;
+    const subTextColor = contrast.secondary;
+    const accentColor = contrast.accent;
     
     // Clear canvas
     ctx.clearRect(0, 0, w, h);
@@ -1859,34 +2473,43 @@ function drawPreviewFrontSide(ctx, w, h, mat, isDark, textColor, subTextColor, a
     
     const contentX = 40 * scale;
     const contentY = h / 2 - 10 * scale;
+    const textAlign = state.cardData.align || 'left';
+    const leftX = contentX;
+    const centerX = w / 2;
+    const rightX = w - 40 * scale;
+    const textX = textAlign === 'center' ? centerX : (textAlign === 'right' ? rightX : leftX);
+    const selectedFont = state.cardData.font || "'DM Sans',sans-serif";
     
     // Name
     ctx.save();
     ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.2)';
     ctx.shadowBlur = 3 * scale;
-    ctx.font = `italic ${28 * scale}px "Cormorant Garamond"`;
+    ctx.font = `italic ${28 * scale}px ${selectedFont}`;
     ctx.fillStyle = textColor;
-    ctx.textAlign = 'left';
+    ctx.textAlign = textAlign;
     const displayName = state.cardData.name || 'Your Name';
-    ctx.fillText(displayName, contentX, contentY);
+    ctx.fillText(displayName, textX, contentY);
     ctx.restore();
     
     // Title
-    ctx.font = `300 ${10 * scale}px Inter`;
+    ctx.font = `300 ${10 * scale}px ${selectedFont}`;
     ctx.fillStyle = subTextColor;
     ctx.letterSpacing = '0.2em';
+    ctx.textAlign = textAlign;
     const displayTitle = state.cardData.title || 'Creative Director';
-    ctx.fillText(displayTitle, contentX, contentY + 20 * scale);
+    ctx.fillText(displayTitle, textX, contentY + 20 * scale);
     
     // Divider
-    const divGrad = ctx.createLinearGradient(contentX, 0, contentX + 60 * scale, 0);
+    const dividerStartX = textAlign === 'left' ? textX : (textAlign === 'right' ? textX - 60 * scale : textX - 30 * scale);
+    const dividerEndX = textAlign === 'left' ? textX + 60 * scale : (textAlign === 'right' ? textX : textX + 30 * scale);
+    const divGrad = ctx.createLinearGradient(dividerStartX, 0, dividerEndX, 0);
     divGrad.addColorStop(0, accentColor);
     divGrad.addColorStop(1, isDark ? 'rgba(201,169,98,0.3)' : 'rgba(201,169,98,0.6)');
     ctx.strokeStyle = divGrad;
     ctx.lineWidth = 1.5 * scale;
     ctx.beginPath();
-    ctx.moveTo(contentX, contentY + 35 * scale);
-    ctx.lineTo(contentX + 60 * scale, contentY + 35 * scale);
+    ctx.moveTo(dividerStartX, contentY + 35 * scale);
+    ctx.lineTo(dividerEndX, contentY + 35 * scale);
     ctx.stroke();
     
     // Contact info
@@ -1895,22 +2518,38 @@ function drawPreviewFrontSide(ctx, w, h, mat, isDark, textColor, subTextColor, a
     ctx.save();
     ctx.shadowColor = isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)';
     ctx.shadowBlur = 2 * scale;
-    ctx.font = `400 ${10 * scale}px Inter`;
+    ctx.font = `400 ${10 * scale}px ${selectedFont}`;
     ctx.fillStyle = textColor;
-    const displayNumber = state.cardData.number || '+1 (555) 000-0000';
-    ctx.fillText(displayNumber, contentX, contactY);
+    ctx.textAlign = textAlign;
+    const displayNumber = cleanFieldValue(state.cardData.number) || '+1 (555) 000-0000';
+    ctx.fillText(displayNumber, textX, contactY);
     ctx.restore();
     
-    ctx.font = `300 ${9 * scale}px Inter`;
+    ctx.font = `300 ${9 * scale}px ${selectedFont}`;
     ctx.fillStyle = subTextColor;
-    const displayEmail = state.cardData.email || 'hello@cardel.com';
-    ctx.fillText(displayEmail, contentX, contactY + 18 * scale);
+    ctx.textAlign = textAlign;
+    const displayEmail = cleanFieldValue(state.cardData.email) || 'hello@cardel.com';
+    ctx.fillText(displayEmail, textX, contactY + 18 * scale);
+    
+    // Website
+    const previewWebsite = cleanFieldValue(state.cardData.website) || 'www.cardel.com';
+    if (previewWebsite) {
+        ctx.font = `300 ${8.5 * scale}px ${selectedFont}`;
+        ctx.fillStyle = subTextColor;
+        ctx.globalAlpha = 0.7;
+        ctx.textAlign = textAlign;
+        ctx.fillText(previewWebsite, textX, contactY + 34 * scale);
+        ctx.globalAlpha = 1;
+    }
+    
+    // Dynamic Icon Positioning for Preview Cards
+    const iconX = textAlign === 'right' ? 40 * scale : w - 40 * scale;
     
     // NFC Icon
     const iconColor = isDark ? '#c9a962' : '#1a1a1a';
-    const iconSize = 24 * scale;
-    const nfcX = w - 50 * scale;
-    const nfcY = 25 * scale;
+    const iconSize = 20 * scale;
+    const nfcX = iconX;
+    const nfcY = 22 * scale;
     
     ctx.save();
     ctx.strokeStyle = iconColor;
@@ -1930,8 +2569,8 @@ function drawPreviewFrontSide(ctx, w, h, mat, isDark, textColor, subTextColor, a
     ctx.restore();
     
     // WiFi Icon
-    const wifiX = w - 50 * scale;
-    const wifiY = h - 30 * scale;
+    const wifiX = iconX;
+    const wifiY = h - 22 * scale;
     
     ctx.save();
     ctx.strokeStyle = iconColor;
@@ -1977,99 +2616,130 @@ updateAllCards = function() {
             const card = wrap.querySelector('.about-card-image');
             if (!card) return;
 
-            let wrapRect = wrap.getBoundingClientRect();
-            const MAX_ROTATE = 3.5;      // max rotation in degrees
-            const MAX_TRANSLATE = 6;      // max pixel shift
+            const MAX_ROTATE = 3.5;
+            const MAX_TRANSLATE = 6;
+            let targetX = 0, targetY = 0, targetRX = 0, targetRY = 0;
+            let curX = 0, curY = 0, curRX = 0, curRY = 0;
+            let hovering = false;
 
-            window.addEventListener('resize', () => {
-                wrapRect = wrap.getBoundingClientRect();
-            });
+            function tick(time) {
+                if (!hovering) {
+                    // Always-on ambient drift to avoid abrupt stopping
+                    const t = (time || performance.now()) * 0.001;
+                    targetX = Math.sin(t * 0.8) * 1.5;
+                    targetY = Math.cos(t * 0.6) * 1.2;
+                    targetRX = Math.cos(t * 0.7) * 0.8;
+                    targetRY = Math.sin(t * 0.9) * 1.0;
+                }
+
+                curX += (targetX - curX) * 0.08;
+                curY += (targetY - curY) * 0.08;
+                curRX += (targetRX - curRX) * 0.08;
+                curRY += (targetRY - curRY) * 0.08;
+
+                card.style.transform = `perspective(800px) translateX(${curX}px) translateY(${curY}px) rotateX(${curRX}deg) rotateY(${curRY}deg)`;
+                requestAnimationFrame(tick);
+            }
 
             wrap.addEventListener('mousemove', (e) => {
                 const rect = wrap.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-
                 const normX = (x / rect.width) * 2 - 1;
                 const normY = (y / rect.height) * 2 - 1;
 
-                const rotateY = normX * MAX_ROTATE;
-                const rotateX = normY * -MAX_ROTATE;
-                const moveX = normX * MAX_TRANSLATE;
-                const moveY = normY * MAX_TRANSLATE;
-
-                card.style.transform = `
-                    perspective(800px)
-                    translateX(${moveX}px)
-                    translateY(${moveY}px)
-                    rotateX(${rotateX}deg)
-                    rotateY(${rotateY}deg)
-                `;
-            });
-
-            wrap.addEventListener('mouseenter', () => {
-                card.style.transition = 'none';
+                hovering = true;
+                targetRY = normX * MAX_ROTATE;
+                targetRX = normY * -MAX_ROTATE;
+                targetX = normX * MAX_TRANSLATE;
+                targetY = normY * MAX_TRANSLATE;
             });
 
             wrap.addEventListener('mouseleave', () => {
-                card.style.transition = 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1)';
-                card.style.transform = 'perspective(800px) translateX(0) translateY(0) rotateX(0) rotateY(0)';
+                hovering = false;
             });
+
+            requestAnimationFrame(tick);
         })();
     
     
-const revealSections = document.querySelectorAll('.reveal-section');
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-
-            entry.target.classList.add('active');
-
-            const items = entry.target.querySelectorAll('.reveal-item');
-            items.forEach((item, index) => {
-                setTimeout(() => {
-                    item.classList.add('active');
-                }, index * 150); // stagger animation
-            });
-
-        }
-    });
-}, { threshold: 0.15 });
-
-revealSections.forEach(section => {
-    observer.observe(section);
-});
-
-
 
 function continueToMaterials() {
-    saveToStorage();
-    window.location.href = 'materials.html';
+    console.log("Validating identity details...");
+    
+    const fields = [
+        { key: 'name', id: 'check-item-1' },
+        { key: 'title', id: 'check-item-2' },
+        { key: 'number', id: 'check-item-3' },
+        { key: 'email', id: 'check-item-4' }
+    ];
+
+    let isValid = true;
+
+    try {
+        fields.forEach(field => {
+            const value = state.cardData[field.key] || "";
+            if (!value || value.toString().trim() === '') {
+                isValid = false;
+                const element = document.getElementById(field.id);
+                if (element) {
+                    element.classList.add('shake', 'invalid-field');
+                    setTimeout(() => {
+                        element.classList.remove('shake', 'invalid-field');
+                    }, 800);
+                }
+            }
+        });
+
+        if (!isValid) {
+            showToast("Please complete your identity to continue.");
+            return;
+        }
+
+        saveToStorage();
+        window.location.href = 'materials.html';
+    } catch (err) {
+        console.error("Validation error:", err);
+        window.location.href = 'materials.html';
+    }
 }
+window.continueToMaterials = continueToMaterials;
 
 function loadFromStorage() {
     const saved = localStorage.getItem('cardel_state');
     if (saved) {
         const parsed = JSON.parse(saved);
-        Object.assign(state.cardData, parsed.cardData);
-        Object.assign(state.orderConfig, parsed.orderConfig);
+        if (parsed.cardData) {
+            Object.assign(state.cardData, parsed.cardData);
+            state.cardData.materialCategory = getMaterialCategoryById(state.cardData.material);
+            sanitizeCardTextFields();
+            if (state.cardData.logoDataUrl) {
+                const img = new Image();
+                img.onload = () => {
+                    state.cardData.logoImg = img;
+                    if (typeof updateAllCards === 'function') updateAllCards();
+                };
+                img.src = state.cardData.logoDataUrl;
+            }
+            if (state.cardData.designDataUrl) {
+                const dImg = new Image();
+                dImg.onload = () => {
+                    state.cardData.designImg = dImg;
+                    if (typeof updateAllCards === 'function') updateAllCards();
+                };
+                dImg.src = state.cardData.designDataUrl;
+            }
+        }
+        if (parsed.orderConfig) {
+            Object.assign(state.orderConfig, parsed.orderConfig);
+        }
+        if (state.cardData.showQR !== undefined) {
+            state.orderConfig.addons.qr = !!state.cardData.showQR;
+        }
     }
 }
 
-// Material helpers
-function getCurrentMaterial() {
-    for (const cat of Object.keys(state.materials)) {
-        const mat = state.materials[cat].find(m => m.id === state.cardData.material);
-        if (mat) return mat;
-    }
-    return state.materials.metal[0];
-}
-
-function isDarkMaterial(id) {
-    const darkMaterials = ['black-metal', 'carbon-fiber', 'forged-carbon', 'walnut', 'ebony', 'bamboo', 'meteorite'];
-    return darkMaterials.includes(id);
-}
+// getCurrentMaterial and isDarkMaterial are defined above — no duplicates needed
 
 // Order functions
 function selectQuantity(qty, price, element) {
@@ -2125,6 +2795,20 @@ function showToast(message) {
 
 const ThreeCardController = {
     isInitialized: false,
+    _groupOpacity: -1,
+
+    setCardGroupOpacity(alpha) {
+        const next = Math.max(0, Math.min(1, alpha));
+        if (Math.abs(next - this._groupOpacity) < 0.01) return;
+        this._groupOpacity = next;
+        if (!this.cardGroup) return;
+        this.cardGroup.traverse((obj) => {
+            if (obj && obj.material) {
+                obj.material.transparent = true;
+                obj.material.opacity = next;
+            }
+        });
+    },
 
     init() {
         if (this.isInitialized) return;
@@ -2137,8 +2821,8 @@ const ThreeCardController = {
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
         this.updateCameraZ(); 
 
-        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true, antialias: true });
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true, antialias: true, precision: 'highp' });
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.5));
         this.renderer.setSize(window.innerWidth, window.innerHeight);
 
         // 2. Textures
@@ -2146,6 +2830,13 @@ const ThreeCardController = {
         this.backTexture = new THREE.CanvasTexture(document.getElementById('heroBackCanvas'));
         this.frontTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
         this.backTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+        // LinearFilter: no mipmap blur — keeps canvas text/detail crisp on the 3D mesh
+        this.frontTexture.minFilter = THREE.LinearFilter;
+        this.frontTexture.magFilter = THREE.LinearFilter;
+        this.backTexture.minFilter  = THREE.LinearFilter;
+        this.backTexture.magFilter  = THREE.LinearFilter;
+        this.frontTexture.generateMipmaps = false;
+        this.backTexture.generateMipmaps  = false;
 
         // 3. Custom Rounded Rectangle Geometry
         this.cardGroup = new THREE.Group();
@@ -2221,6 +2912,7 @@ window.updateAllCards = () => {
     // Force immediate texture refresh when state changes
     this.frontTexture.needsUpdate = true;
     this.backTexture.needsUpdate = true;
+    this._lastTexUp = 0; // reset throttle so next frame uploads immediately
     // Also trigger a re-render of hero canvases to ensure sync
     if (typeof drawCard === 'function') {
         drawCard('heroFrontCanvas', 'front', 600, 378);
@@ -2279,9 +2971,14 @@ window.updateAllCards = () => {
                 trigger: document.body,
                 start: "top top",
                 end: "bottom bottom",
-                scrub: 1.8 
+                scrub: 1.5, // Increased for more premium, fluid motion
+                invalidateOnRefresh: true // Recalculate on resize/layout shift
             }
-        }).to(this.proxy, { progress: 3, ease: "none" });
+        }).to(this.proxy, { 
+            progress: 3, 
+            ease: "none",
+            force3D: true // Ensure smoother hardware-accelerated transitions
+        });
 
         // Magnetic Scroll Snapping (Gently centers the section when scrolling stops)
        /* const snapSections = [
@@ -2315,8 +3012,7 @@ window.updateAllCards = () => {
 
     if (!this.anchors[0]) return;
 
-    // CRITICAL FIX: Always update textures to match current state
-    // This ensures name, material, and details are current when scrolling
+    // Always update textures — prevents stale canvas state
     this.frontTexture.needsUpdate = true;
     this.backTexture.needsUpdate = true;
 
@@ -2326,10 +3022,12 @@ window.updateAllCards = () => {
     if (scrollY < 50 || (typeof state !== 'undefined' && state.isZoomed)) {
         domCard.style.opacity = '1';
         domCard.style.pointerEvents = 'auto';
+        domCard.style.visibility = 'visible';
         this.cardGroup.visible = false;
     } else {
         domCard.style.opacity = '0';
         domCard.style.pointerEvents = 'none';
+        domCard.style.visibility = 'hidden';
         this.cardGroup.visible = true;
     }
 
@@ -2342,10 +3040,17 @@ window.updateAllCards = () => {
         let nextIndex = Math.min(currentIndex + 1, 3);
         let rawSegment = progress - currentIndex; 
 
-        // THE DEADZONE MAGIC: 
-        let segmentProgress = (rawSegment - 0.12) / 0.76;
-        segmentProgress = Math.max(0, Math.min(1, segmentProgress));
-        segmentProgress = segmentProgress * segmentProgress * (3 - 2 * segmentProgress);
+        // NEW: Conditional scroll logic — second and third segments (Steps->About, About->Partners) are linear
+        let segmentProgress;
+        if (currentIndex >= 1) {
+            // Linear transition: non-stopping, continuous flow
+            segmentProgress = Math.max(0, Math.min(1, rawSegment));
+        } else {
+            // Segment 0 (Hero -> Steps): Maintain deadzone + smoothstep for premium entry
+            segmentProgress = (rawSegment - 0.05) / 0.90;
+            segmentProgress = Math.max(0, Math.min(1, segmentProgress));
+            segmentProgress = segmentProgress * segmentProgress * (3 - 2 * segmentProgress);
+        }
 
         const a1 = this.anchors[currentIndex];
         const a2 = this.anchors[nextIndex];
@@ -2354,17 +3059,21 @@ window.updateAllCards = () => {
             const rect1 = a1.getBoundingClientRect();
             const rect2 = a2.getBoundingClientRect();
 
-            const x1 = rect1.left + rect1.width / 2 - window.innerWidth / 2;
-            const y1 = -(rect1.top + rect1.height / 2) + window.innerHeight / 2;
-            const scale1 = rect1.width / 600;
+            if (rect1.width === 0 || rect2.width === 0) return;
 
+            // Document-relative Y — stable against reveal-animation jitters
+            const docY1 = rect1.top + window.scrollY;
+            const docY2 = rect2.top + window.scrollY;
+            
+            const x1 = rect1.left + rect1.width / 2 - window.innerWidth / 2;
             const x2 = rect2.left + rect2.width / 2 - window.innerWidth / 2;
-            const y2 = -(rect2.top + rect2.height / 2) + window.innerHeight / 2;
-            const scale2 = rect2.width / 600;
+            
+            const idealY1 = -(docY1 - window.scrollY + rect1.height / 2) + window.innerHeight / 2;
+            const idealY2 = -(docY2 - window.scrollY + rect2.height / 2) + window.innerHeight / 2;
 
             const targetX = THREE.MathUtils.lerp(x1, x2, segmentProgress);
-            const targetY = THREE.MathUtils.lerp(y1, y2, segmentProgress);
-            const targetScale = THREE.MathUtils.lerp(scale1, scale2, segmentProgress);
+            const targetY = THREE.MathUtils.lerp(idealY1, idealY2, segmentProgress);
+            const targetScale = THREE.MathUtils.lerp(rect1.width / 600, rect2.width / 600, segmentProgress);
 
             this.cardGroup.position.set(targetX, targetY, 0);
             this.cardGroup.scale.set(targetScale, targetScale, targetScale);
@@ -2379,6 +3088,14 @@ window.updateAllCards = () => {
             this.cardGroup.rotation.z = tilt;
             this.cardGroup.rotation.x = -tilt;
         }
+    }
+
+    // Canvas z-index: drop below DOM card when fully settled at top
+    if (this.canvas) {
+        const isSettledAtTop = (typeof this.proxy !== 'undefined' && this.proxy.progress < 0.01 && window.scrollY < 100);
+        this.canvas.style.zIndex = isSettledAtTop ? '100' : '10001';
+        this.canvas.style.pointerEvents = 'none';
+        this.canvas.style.display = 'block';
     }
 
     this.renderer.render(this.scene, this.camera);
@@ -2478,4 +3195,3 @@ class TiltEffect {
         this.element.style.transform = `perspective(${this.settings.perspective}px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
     }
 }
-

@@ -1,0 +1,3513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CARDEL — Card Customizer</title>
+  <link rel="stylesheet" href="style.css?v=2.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="shared.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ===== RESET & ROOT ===== */
+    :root {
+      --bg: transparent;
+      --surface: rgba(248, 247, 245, 0.72);
+      --surface-solid: rgba(250, 249, 247, 0.92);
+      --surface-2: rgba(240, 238, 234, 0.7);
+      --gold: #c9a962;
+      --gold-light: #e2c98a;
+      --gold-dark: #b8941f;
+      --text: #1a1a1a;
+      --text-mid: #555555;
+      --text-muted: #888888;
+      --border: rgba(0, 0, 0, 0.08);
+      --border-strong: rgba(0, 0, 0, 0.14);
+      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 12px 48px rgba(0, 0, 0, 0.12);
+      --shadow-lg: 0 32px 90px rgba(0, 0, 0, 0.18);
+      --shadow-xl: 0 56px 130px rgba(0, 0, 0, 0.24);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --blur: blur(22px);
+      --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Fixed video background */
+    .mat-video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .mat-video-bg video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+    }
+
+    /* Subtle overlay so text stays readable */
+    .mat-video-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: transparent;
+    }
+
+    html {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: transparent !important;
+      background-color: transparent !important;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      /* Scrollbar styled to match premium look */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(198, 169, 107, 0.4) transparent;
+    }
+
+    body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background: rgba(198, 169, 107, 0.5);
+      border-radius: 10px;
+    }
+
+    body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+
+    /* ===== TRANSPARENT CONTAINER OVERRIDES ===== */
+    .navbar,
+    .page-wrapper,
+    .main-cols,
+    .center-panel,
+    #previewContainer,
+    .card-entrance-wrapper,
+    .card-container-3d,
+    .card-3d-wrapper,
+    .card-3d-inner,
+    .card-preview-section {
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+
+    /* ===== LAYOUT ===== */
+    .page-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 64px);
+      position: relative;
+      z-index: 1;
+      background: transparent !important;
+      overflow-x: hidden;
+    }
+
+    .main-cols {
+      display: grid;
+      grid-template-columns: 320px 1fr 320px;
+      gap: 20px;
+      flex: 1;
+      background: transparent !important;
+      padding: 20px 16px;
+      box-sizing: border-box;
+      width: 100%;
+      align-items: start;
+    }
+
+    /* ===== SIDE PANELS — shared base ===== */
+    .left-panel,
+    .right-panel {
+      width: 100%;
+      /* fill the grid column (320px) */
+      min-height: calc(100vh - 110px);
+      /* slightly more height */
+      max-height: calc(100vh - 110px);
+      position: sticky;
+      top: 84px;
+      border-radius: 24px !important;
+      border: 1px solid var(--border) !important;
+      background: var(--surface-solid) !important;
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+      padding: 32px 28px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(198, 169, 107, 0.4) transparent;
+      transition: box-shadow 0.4s ease, transform 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    /* Individual margins to pull panels away from viewport edges */
+    .left-panel {
+      margin-left: 4px;
+    }
+
+    .right-panel {
+      margin-right: 4px;
+    }
+
+    .left-panel:hover,
+    .right-panel:hover {
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+      transform: translateY(-2px);
+    }
+
+    /* Scrollbar styling — slim gold thumb, inset from panel edge */
+    .left-panel::-webkit-scrollbar,
+    .right-panel::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .left-panel::-webkit-scrollbar-thumb,
+    .right-panel::-webkit-scrollbar-thumb {
+      background: rgba(198, 169, 107, 0.55);
+      border-radius: 10px;
+    }
+
+    .left-panel::-webkit-scrollbar-track,
+    .right-panel::-webkit-scrollbar-track {
+      background: transparent;
+      margin: 10px 0;
+    }
+
+
+
+
+
+    /* ===== PANEL HEADER ===== */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .badge-num {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(198, 169, 107, 0.4);
+    }
+
+    .panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      color: var(--text);
+    }
+
+    /* ===== CONTROL GROUPS ===== */
+    .ctrl-group {
+      margin-bottom: 28px;
+    }
+
+    .ctrl-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      color: var(--gold-dark);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ctrl-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--border), transparent);
+    }
+
+    .ctrl-sublabel {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      margin-top: 14px;
+      text-transform: uppercase;
+    }
+
+    /* ===== SEGMENT CONTROLS — Sliding pill ===== */
+    .seg-ctrl {
+      display: flex;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .seg-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 7px;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.22s cubic-bezier(0.16,1,0.3,1),
+                  background 0.22s cubic-bezier(0.16,1,0.3,1),
+                  box-shadow 0.22s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.16s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    /* Ripple layer */
+    .seg-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--rx,50%) var(--ry,50%), rgba(198,169,107,0.18) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .seg-btn:hover::before { opacity: 1; }
+
+    .seg-btn.active {
+      background: white;
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(198,169,107,0.18);
+      font-weight: 600;
+    }
+
+    .seg-btn:hover:not(.active) {
+      background: rgba(198,169,107,0.07);
+      color: var(--text);
+      transform: scale(1.03);
+    }
+
+    .seg-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* ===== RANGE SLIDERS — Premium gold track ===== */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 3px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: linear-gradient(to right, var(--gold) var(--val, 50%), var(--border-strong) var(--val, 50%));
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      border: 2.5px solid var(--gold);
+      box-shadow: 0 2px 8px rgba(198, 169, 107, 0.4);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    input[type="range"]:hover::-webkit-slider-thumb {
+      transform: scale(1.18);
+      box-shadow: 0 4px 14px rgba(198, 169, 107, 0.6);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      border: 2.5px solid var(--gold);
+      box-shadow: 0 2px 8px rgba(198, 169, 107, 0.4);
+      cursor: pointer;
+    }
+
+    .slider-val {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gold-dark);
+      background: rgba(198, 169, 107, 0.1);
+      border: 1px solid rgba(198, 169, 107, 0.25);
+      border-radius: 20px;
+      padding: 3px 10px;
+      min-width: 46px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    /* ===== INPUTS & SELECTS ===== */
+    .ctrl-input,
+    .ctrl-select {
+      width: 100%;
+      padding: 11px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      margin-bottom: 8px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    .ctrl-input:focus,
+    .ctrl-select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(198, 169, 107, 0.15);
+      background: white;
+    }
+
+    .ctrl-input::placeholder {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .ghost-btn {
+      flex: 1;
+      padding: 10px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ghost-btn:hover {
+      background: var(--surface-2);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    .ghost-btn.upload {
+      border-color: var(--gold);
+      color: var(--gold-dark);
+      background: rgba(198, 169, 107, 0.06);
+    }
+
+    .ghost-btn.upload:hover {
+      background: rgba(198, 169, 107, 0.14);
+      box-shadow: 0 4px 12px rgba(198, 169, 107, 0.25);
+    }
+
+    .panel-note {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 24px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.06em;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+      margin: 6px 0 22px;
+    }
+
+    /* ===== CENTER PANEL ===== */
+    .center-panel {
+      background: transparent !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 52px 40px 70px;
+      position: relative;
+    }
+
+    /* Ambient background glow in center */
+    .center-panel::before {
+      content: '';
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(198, 169, 107, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .preview-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .preview-eyebrow::before,
+    .preview-eyebrow::after {
+      content: '';
+      display: block;
+      width: 36px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+    }
+
+    /* ===== 3D CARD PREVIEW ===== */
+    .live-preview-wrap {
+      perspective: 1400px;
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Enhanced drop shadow under card */
+    .live-preview-wrap::before {
+      content: '';
+      position: absolute;
+      bottom: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 75%;
+      height: 48px;
+      background: radial-gradient(ellipse, rgba(0, 0, 0, 0.18) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(4px);
+    }
+
+    #livePreviewCard {
+      width: 100%;
+      aspect-ratio: 1.586;
+      border-radius: 18px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.04),
+        0 12px 28px rgba(0, 0, 0, 0.14),
+        0 30px 80px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    #livePreviewCard:hover {
+      box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.04),
+        0 16px 40px rgba(0, 0, 0, 0.18),
+        0 40px 100px rgba(0, 0, 0, 0.22);
+    }
+
+    #livePreviewInner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      pointer-events: none;
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 18px;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    .face.front {
+      transform: translateZ(1px);
+      border: 1px solid rgba(201, 169, 98, 0.35);
+    }
+
+    .face.back {
+      transform: rotateY(180deg) translateZ(1px);
+      background: transparent;
+    }
+
+    .preview-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Metallic Shimmer */
+    #livePreviewCard .card-shine {
+      position: absolute;
+      top: -150%;
+      left: -150%;
+      width: 300%;
+      height: 300%;
+      pointer-events: none;
+      z-index: 5;
+      background: linear-gradient(120deg,
+          transparent 35%,
+          rgba(255, 255, 255, 0.1) 45%,
+          rgba(255, 255, 255, 0.3) 50%,
+          rgba(255, 255, 255, 0.1) 55%,
+          transparent 65%);
+      transform: rotate(25deg) translateX(-120%);
+      opacity: 0;
+    }
+
+    #previewContainer:hover .card-shine {
+      opacity: 0.6;
+      animation: premiumShine 2.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes premiumShine {
+      0% {
+        transform: rotate(25deg) translateX(-120%);
+      }
+
+      100% {
+        transform: rotate(25deg) translateX(120%);
+      }
+    }
+
+    .preview-face.front {
+      border: 1px solid rgba(201, 169, 98, 0.35);
+    }
+
+    #livePreviewCard.golden-glow {
+      animation: goldGlowPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes goldGlowPulse {
+      0% {
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.18), 0 0 18px rgba(201, 169, 98, 0.35);
+      }
+
+      50% {
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.18), 0 0 50px rgba(201, 169, 98, 0.8);
+      }
+
+      100% {
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.18), 0 0 18px rgba(201, 169, 98, 0.35);
+      }
+    }
+
+    /* ===== ROTATE HINT ===== */
+    .rotate-hint {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+
+    .rotate-hint .arrow {
+      font-size: 18px;
+      color: var(--gold);
+      animation: spin 5s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ===== ACTION PILLS ===== */
+    .action-pills {
+      display: flex;
+      gap: 12px;
+      margin-top: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pill-btn {
+      padding: 12px 30px;
+      border-radius: 40px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-expo);
+    }
+
+    .pill-btn.material-pill {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      color: var(--text-mid);
+      border: 1px solid var(--border-strong);
+    }
+
+    .pill-btn.material-pill.mat-active {
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 6px 24px rgba(198, 169, 107, 0.45);
+    }
+
+    .pill-btn.material-pill:hover:not(.mat-active) {
+      background: var(--surface-2);
+      transform: translateY(-1px);
+    }
+
+    .pill-btn.proceed-pill {
+      background: linear-gradient(135deg, #A67B5B, #8B5E3C);
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(139, 94, 60, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: box-shadow 0.4s cubic-bezier(0.16,1,0.3,1), outline-color 0.4s ease;
+    }
+
+    .pill-btn.proceed-pill:hover {
+      box-shadow: 0 10px 32px rgba(139, 94, 60, 0.50), 0 0 20px 2px rgba(201, 169, 98, 0.2);
+      outline-color: rgba(255,255,255,0.28);
+    }
+
+    /* ===== INLINE MATERIAL PANEL ===== */
+    .inline-mat {
+      width: 100%;
+      max-width: 520px;
+      margin-top: 24px;
+      background: rgba(252, 250, 247, 0.92);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.14);
+      display: none;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.3s var(--ease-expo), transform 0.3s var(--ease-expo);
+      position: relative;
+      z-index: 1;
+    }
+
+    .inline-mat.vis {
+      display: block;
+    }
+
+    .inline-mat.anim {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .imat-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .imat-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: 0.03em;
+    }
+
+    .imat-close {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.18s;
+    }
+
+    .imat-close:hover {
+      background: var(--surface-2);
+      color: var(--text);
+      transform: rotate(90deg);
+    }
+
+    .imat-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface-2);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+
+    .imat-tab {
+      flex: 1;
+      padding: 7px 4px;
+      border: none;
+      border-radius: 9px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .imat-tab.active {
+      background: var(--text);
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .imat-tab:hover:not(.active) {
+      background: rgba(0, 0, 0, 0.06);
+      color: var(--text);
+    }
+
+    .imat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .imat-card {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-expo);
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+
+    .imat-card:hover {
+      transform: scale(1.05) translateY(-2px);
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+    }
+
+    .imat-card.sel {
+      border-color: var(--gold);
+      box-shadow: 0 6px 24px rgba(198, 169, 107, 0.4);
+    }
+
+    .imat-thumb {
+      height: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .imat-thumb canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .imat-foot {
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(6px);
+      padding: 7px 9px;
+    }
+
+    .imat-name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: white;
+    }
+
+    .imat-spec {
+      font-size: 8px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 1px;
+      letter-spacing: 0.05em;
+    }
+
+    .imat-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: var(--gold);
+      color: white;
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .imat-tick {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: white;
+      box-shadow: 0 2px 6px rgba(198, 169, 107, 0.5);
+    }
+
+    .imat-card.sel .imat-tick {
+      display: flex;
+    }
+
+    /* ===== CONTINUE BUTTON ===== */
+    .continue-wrap {
+      margin-top: 32px;
+      width: 100%;
+      max-width: 380px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .continue-btn {
+      width: 100%;
+      padding: 17px 32px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold) 50%, var(--gold-light));
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.28s var(--ease-expo);
+      box-shadow: 0 10px 36px rgba(198, 169, 107, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .continue-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 60%);
+      border-radius: inherit;
+      transition: opacity 0.3s;
+    }
+
+    .continue-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 50px rgba(198, 169, 107, 0.55);
+    }
+
+
+
+    .rp-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .rp-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
+
+    .rp-q {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: default;
+    }
+
+    .rp-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 13px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 20px;
+    }
+
+    .rp-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .rp-tab {
+      padding: 6px 15px;
+      border-radius: 40px;
+      border: 1px solid var(--border);
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .rp-tab:hover {
+      border-color: var(--gold);
+      color: var(--gold-dark);
+      background: rgba(198, 169, 107, 0.06);
+    }
+
+    .rp-tab.active {
+      background: var(--text);
+      border-color: var(--text);
+      color: white;
+    }
+
+    /* ===== TEMPLATE CARDS ===== */
+    .tpl-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .tpl-card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-expo);
+      box-shadow: var(--shadow-sm);
+      background: white;
+    }
+
+    .tpl-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tpl-card.sel {
+      border-color: var(--gold);
+      box-shadow: 0 6px 24px rgba(198, 169, 107, 0.35);
+    }
+
+    .tpl-cw {
+      width: 100%;
+      aspect-ratio: 1.586;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tpl-cw canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .tpl-info {
+      padding: 10px 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-top: 1px solid var(--border);
+    }
+
+    .tpl-name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: 0.03em;
+    }
+
+    .tpl-arr {
+      font-size: 14px;
+      color: var(--gold);
+    }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 44px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      padding: 12px 30px;
+      border-radius: 40px;
+      opacity: 0;
+      transition: all 0.3s var(--ease-expo);
+      z-index: 999;
+      white-space: nowrap;
+      box-shadow: var(--shadow-md);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1200px) {
+      .main-cols {
+        grid-template-columns: 300px 1fr 300px;
+      }
+    }
+
+    @media (max-width: 960px) {
+      .main-cols {
+        grid-template-columns: 1fr;
+      }
+
+      .left-panel,
+      .right-panel {
+        height: auto;
+        position: relative;
+        top: 0;
+      }
+    }
+
+
+    /* ===== LAYOUT ===== */
+    .page-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 64px);
+    }
+
+    .main-cols {
+      display: grid;
+      grid-template-columns: 370px 1fr 370px;
+      gap: 0;
+      flex: 1;
+    }
+
+    /* ===== LEFT PANEL ===== */
+    .left-panel {
+      background: var(--surface);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border-right: 1px solid var(--border);
+      height: calc(100vh - 64px);
+      position: sticky;
+      top: 64px;
+      overflow-y: auto;
+      padding: 32px 26px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-strong) transparent;
+      opacity: 0;
+      transform: translateX(-18px);
+    }
+
+    .left-panel::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .left-panel::-webkit-scrollbar-thumb {
+      background: var(--gold);
+      border-radius: 4px;
+      opacity: 0.4;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .badge-num {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      color: var(--text);
+    }
+
+    .ctrl-group {
+      margin-bottom: 28px;
+    }
+
+    .ctrl-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--text-mid);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .ctrl-sublabel {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      margin-top: 12px;
+    }
+
+    .seg-ctrl {
+      display: flex;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .seg-btn {
+      flex: 1;
+      padding: 9px 4px;
+      border: none;
+      background: transparent;
+      font-size: 11.5px;
+      letter-spacing: 0.04em;
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: color 0.22s, background 0.22s;
+      border-right: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    .seg-btn:last-child {
+      border-right: none;
+    }
+
+    .seg-btn.active {
+      background: var(--text);
+      color: #fff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      font-weight: 500;
+    }
+
+    .seg-btn:hover:not(.active) {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text);
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 3px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: linear-gradient(to right, var(--gold) 0%, var(--gold) var(--val, 50%), var(--border-strong) var(--val, 50%));
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+      transition: height 0.18s;
+    }
+
+    input[type="range"]:hover {
+      height: 4px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      border: 2.5px solid var(--gold);
+      box-shadow: 0 0 0 3px rgba(198, 169, 107, 0.18), 0 2px 6px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+      transition: transform 0.18s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.18);
+    }
+
+    .slider-val {
+      font-size: 10.5px;
+      color: var(--gold-dark);
+      background: rgba(198, 169, 107, 0.08);
+      border: 1px solid rgba(198, 169, 107, 0.25);
+      border-radius: 20px;
+      padding: 3px 9px;
+      min-width: 46px;
+      text-align: center;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    .ctrl-input,
+    .ctrl-select {
+      width: 100%;
+      padding: 10px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12.5px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.22s, box-shadow 0.22s, background 0.22s;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .ctrl-input:focus,
+    .ctrl-select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(198, 169, 107, 0.14);
+      background: white;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .ghost-btn {
+      flex: 1;
+      padding: 9px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-mid);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.22s cubic-bezier(0.16,1,0.3,1),
+                  border-color 0.22s cubic-bezier(0.16,1,0.3,1),
+                  color 0.22s cubic-bezier(0.16,1,0.3,1),
+                  box-shadow 0.22s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.16s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .ghost-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .ghost-btn:hover::after { opacity: 1; }
+
+    .ghost-btn:hover {
+      background: var(--surface-2);
+      border-color: var(--border-strong);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+
+    .ghost-btn:active {
+      transform: scale(0.97) translateY(0);
+    }
+
+    .ghost-btn.upload {
+      border-color: var(--gold);
+      color: var(--gold-dark);
+      background: rgba(198, 169, 107, 0.04);
+    }
+
+    .ghost-btn.upload:hover {
+      background: rgba(198, 169, 107, 0.12);
+      border-color: var(--gold-dark);
+      box-shadow: 0 4px 16px rgba(198,169,107,0.2);
+      color: var(--gold-dark);
+    }
+
+    .panel-note {
+      font-style: italic;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.04em;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0 20px;
+    }
+
+    /* ===== CENTER PANEL ===== */
+    .center-panel {
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      border: none !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 40px 60px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    /* Material flash effect */
+    @keyframes matFlash {
+      0% {
+        filter: brightness(1);
+      }
+
+      30% {
+        filter: brightness(1.28) saturate(1.15);
+      }
+
+      100% {
+        filter: brightness(1);
+      }
+    }
+
+    .mat-flash {
+      animation: matFlash 0.55s var(--ease-expo);
+    }
+
+    .preview-eyebrow {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .preview-eyebrow::before,
+    .preview-eyebrow::after {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 1px;
+      background: var(--border-strong);
+    }
+
+    .live-preview-wrap {
+      perspective: 1200px;
+      width: 100%;
+      max-width: 460px;
+      position: relative;
+    }
+
+    .live-preview-wrap::before {
+      content: '';
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 40px;
+      background: radial-gradient(ellipse, rgba(0, 0, 0, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+
+    #livePreviewCard {
+      width: 100%;
+      aspect-ratio: 1.586;
+      border-radius: 16px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    #livePreviewInner {
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.1s ease-out;
+    }
+
+    #livePreviewCard.rotated {
+      transform: rotateY(180deg);
+    }
+
+    #livePreviewCard.tilted {
+      transition: transform 0.1s ease-out;
+    }
+
+    .preview-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .preview-face.back {
+      transform: rotateY(180deg);
+    }
+
+    .preview-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Metallic Shimmer Light Catch */
+    #livePreviewCard .card-shine {
+      position: absolute;
+      top: -150%;
+      left: -150%;
+      width: 300%;
+      height: 300%;
+      pointer-events: none;
+      z-index: 5;
+      background: linear-gradient(120deg,
+          transparent 35%,
+          rgba(255, 255, 255, 0.15) 45%,
+          rgba(255, 255, 255, 0.35) 50%,
+          rgba(255, 255, 255, 0.15) 55%,
+          transparent 65%);
+      transform: rotate(25deg) translateX(-120%);
+      opacity: 0;
+    }
+
+    #previewContainer:hover .card-shine {
+      opacity: 0.6;
+      animation: premiumShine 2.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes premiumShine {
+      0% {
+        transform: rotate(25deg) translateX(-120%);
+      }
+
+      100% {
+        transform: rotate(25deg) translateX(120%);
+      }
+    }
+
+    .preview-face.front {
+      border: 1px solid rgba(201, 169, 98, 0.4);
+    }
+
+    #livePreviewCard.golden-glow {
+      animation: goldGlowPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes goldGlowPulse {
+      0% {
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.18), 0 0 15px rgba(201, 169, 98, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.18), 0 0 45px rgba(201, 169, 98, 0.8);
+      }
+
+      100% {
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.18), 0 0 15px rgba(201, 169, 98, 0.4);
+      }
+    }
+
+    .rotate-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      margin-top: 36px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rotate-hint .arrow {
+      font-size: 16px;
+      color: var(--gold);
+      animation: spin 4s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .action-pills {
+      display: flex;
+      gap: 10px;
+      margin-top: 32px;
+    }
+
+    .pill-btn {
+      padding: 11px 28px;
+      border-radius: 40px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: all 0.22s;
+    }
+
+    .pill-btn.material-pill {
+      background: var(--surface);
+      color: var(--text-mid);
+      border: 1px solid var(--border-strong);
+    }
+
+    .pill-btn.material-pill.mat-active {
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 20px rgba(198, 169, 107, 0.4);
+    }
+
+    .pill-btn.material-pill:hover:not(.mat-active) {
+      background: var(--surface-2);
+    }
+
+    .pill-btn.proceed-pill {
+      background: var(--gold);
+      color: white;
+      box-shadow: 0 4px 16px rgba(198, 169, 107, 0.35);
+    }
+
+    .pill-btn.proceed-pill:hover {
+      background: var(--gold-dark);
+      transform: translateY(-1px);
+    }
+
+    .inline-mat {
+      width: 100%;
+      max-width: 520px;
+      margin-top: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+      display: none;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .inline-mat.vis {
+      display: block;
+    }
+
+    .inline-mat.anim {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .imat-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .imat-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .imat-close {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.18s;
+    }
+
+    .imat-close:hover {
+      background: var(--surface-2);
+    }
+
+    .imat-tabs {
+      display: flex;
+      gap: 3px;
+      background: var(--surface-2);
+      border-radius: 10px;
+      padding: 3px;
+      margin-bottom: 14px;
+    }
+
+    .imat-tab {
+      flex: 1;
+      padding: 7px 4px;
+      border: none;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .imat-tab.active {
+      background: var(--text);
+      color: white;
+      font-weight: 500;
+    }
+
+    .imat-tab:hover:not(.active) {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .imat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+    }
+
+    .imat-card {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.22s;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+
+    .imat-card:hover {
+      transform: scale(1.04);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .imat-card.sel {
+      border-color: var(--gold);
+      box-shadow: 0 4px 20px rgba(198, 169, 107, 0.35);
+    }
+
+    .imat-thumb {
+      height: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .imat-thumb canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .imat-foot {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      padding: 6px 8px;
+    }
+
+    .imat-name {
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: white;
+    }
+
+    .imat-spec {
+      font-size: 8px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 1px;
+    }
+
+    .imat-badge {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: var(--gold);
+      color: white;
+      font-size: 7px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    .imat-tick {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: white;
+    }
+
+    .imat-card.sel .imat-tick {
+      display: flex;
+    }
+
+
+
+
+
+    .rp-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .rp-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px;
+      font-weight: 400;
+    }
+
+    .rp-q {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .rp-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 18px;
+    }
+
+    .rp-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .rp-tab {
+      padding: 6px 14px;
+      border-radius: 40px;
+      border: 1px solid var(--border);
+      background: transparent;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .rp-tab:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .rp-tab.active {
+      background: var(--text);
+      border-color: var(--text);
+      color: white;
+    }
+
+    .tpl-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .tpl-card {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.22s;
+      box-shadow: var(--shadow-sm);
+      background: white;
+    }
+
+    .tpl-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tpl-card.sel {
+      border-color: var(--gold);
+      box-shadow: 0 4px 20px rgba(198, 169, 107, 0.3);
+    }
+
+    .tpl-cw {
+      width: 100%;
+      aspect-ratio: 1.586;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tpl-cw canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .tpl-info {
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-top: 1px solid var(--border);
+    }
+
+    .tpl-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .tpl-arr {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: white;
+      font-size: 13px;
+      padding: 12px 28px;
+      border-radius: 40px;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+      white-space: nowrap;
+      box-shadow: var(--shadow-md);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ===== RESPONSIVE ===== */
+
+
+    @media (max-width: 960px) {
+      .main-cols {
+        grid-template-columns: 1fr;
+      }
+
+      .left-panel,
+      .right-panel {
+        height: auto;
+        position: relative;
+        top: 0;
+      }
+    }
+
+    /* ===== LUX SLIDER SECTION ===== */
+    .lux-slider-section {
+      font-family: 'Inter', sans-serif;
+      background: rgba(245, 243, 240, 0.45);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: var(--text);
+      width: 100%;
+      padding: 80px 0 60px;
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    .lux-slider {
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .lux-row {
+      display: flex;
+      gap: 30px;
+      width: max-content;
+      animation: luxScrollLeft 45s linear infinite;
+    }
+
+    .lux-row.reverse {
+      animation: luxScrollRight 45s linear infinite;
+    }
+
+    .lux-card {
+      width: 320px;
+      height: 194px;
+      border-radius: 12px;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.5s var(--ease-expo);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .lux-card:hover {
+      transform: translateY(-12px) scale(1.04);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 15px rgba(198, 169, 107, 0.2);
+      border-color: rgba(198, 169, 107, 0.5);
+      z-index: 10;
+    }
+
+    .lux-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @keyframes luxScrollLeft {
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    @keyframes luxScrollRight {
+      0% {
+        transform: translateX(-50%);
+      }
+
+      100% {
+        transform: translateX(0);
+      }
+    }
+
+    .lux-text-center {
+      text-align: center;
+      margin-top: 48px;
+      padding: 0 20px;
+    }
+
+    .lux-text-center h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 38px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: 32px;
+    }
+
+    .lux-btn {
+      display: inline-block;
+      padding: 14px 36px;
+      border-radius: 40px;
+      background: var(--text);
+      color: white;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.3s var(--ease-expo);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .lux-btn:hover {
+      background: var(--gold);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(198, 169, 107, 0.4);
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <div class="nav-left"></div>
+
+      <div class="nav-center">
+        <a href="index.html" target="_self">
+          <div class="nav-logo">
+            <img src="image/Untitled design (15).png" alt="">
+          </div>
+        </a>
+      </div>
+
+      <div class="nav-right">
+        <a href="order.html" class="nav-begin" onclick="saveToStorage()">Order →</a>
+      </div>
+    </div>
+
+    <div class="nav-divider">
+      <hr>
+    </div>
+
+    <div class="nav-links-wrapper">
+      <ul class="nav-links">
+        <li><a href="index.html" target="_self">Design</a></li>
+        <li><a href="materials.html" target="_self">Materials</a></li>
+        <li><a href="atelier.html" target="_self">Atelier</a></li>
+        <li><a href="order.html" target="_self" onclick="saveToStorage()">Order</a></li>
+      </ul>
+    </div>
+  </nav>
+
+
+  <!-- Fixed Video Background -->
+  <!-- <div class="mat-video-bg">
+    <video autoplay muted loop playsinline>
+      <source src="image/Untitled design (7).mp4" type="video/mp4">
+    </video>
+  </div> -->
+
+  <div class="page-wrapper">
+    <div class="main-cols">
+
+      <!-- LEFT PANEL -->
+      <aside class="left-panel" data-lenis-prevent>
+        <div class="panel-header">
+          <div class="badge-num">1</div>
+          <div class="panel-title">Card Customizer</div>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Text Size &amp; Alignment</div>
+          <div class="ctrl-sublabel">Name Size</div>
+          <div class="slider-row">
+            <input type="range" id="nameSize" min="18" max="48" step="1" value="32">
+            <span class="slider-val" id="nameSizeVal">32px</span>
+          </div>
+          <div class="ctrl-sublabel">Number Size</div>
+          <div class="slider-row">
+            <input type="range" id="numberSize" min="12" max="28" step="1" value="18">
+            <span class="slider-val" id="numberSizeVal">18px</span>
+          </div>
+          <div class="ctrl-sublabel" style="margin-top:14px">Text Alignment</div>
+          <div class="seg-ctrl" id="alignGroup">
+            <button class="seg-btn" data-align="left">Left</button>
+            <button class="seg-btn active" data-align="center">Center</button>
+            <button class="seg-btn" data-align="right">Right</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Font</div>
+          <select id="fontSelect" class="ctrl-select">
+            <option value="'Cormorant Garamond',serif">Cormorant Garamond</option>
+            <option value="'Playfair Display',serif">Playfair Display</option>
+            <option value="'DM Sans',sans-serif" selected>DM Sans</option>
+            <option value="'Montserrat',sans-serif">Montserrat</option>
+          </select>
+        </div>
+        <div class="divider"></div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Cardholder Details</div>
+          <input type="text" id="cardName" class="ctrl-input" value="Malik Huzaifa" placeholder="Cardholder name">
+          <input type="text" id="cardNumber" class="ctrl-input" value="1234 5678 9000 0000" placeholder="Card number">
+          <input type="text" id="cardEmail" class="ctrl-input" value="hello@cardel.com" placeholder="Email Address">
+          <div class="divider"></div>
+          <div class="ctrl-label">Logo</div>
+          <input type="text" id="initials" class="ctrl-input" value="MH" placeholder="Initials">
+          <div class="btn-row">
+            <button id="uploadLogoBtn" class="ghost-btn upload">↑ Upload Logo</button>
+            <button id="removeLogoBtn" class="ghost-btn">✕ Remove</button>
+          </div>
+          <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/svg+xml" style="display:none">
+          <div class="ctrl-sublabel">Logo Size</div>
+          <div class="slider-row">
+            <input type="range" id="logoSizer" min="24" max="70" step="1" value="42">
+            <span class="slider-val" id="logoSizeVal">42px</span>
+          </div>
+          <div class="ctrl-sublabel" style="margin-top:14px">Logo Position</div>
+          <div class="seg-ctrl" id="logoPosGroup">
+            <button class="seg-btn" data-pos="flex-start">Left</button>
+            <button class="seg-btn active" data-pos="center">Center</button>
+            <button class="seg-btn" data-pos="flex-end">Right</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">QR Code (Back Side)</div>
+          <div class="seg-ctrl" id="qrToggleGroup">
+            <button class="seg-btn" data-val="false">Off</button>
+            <button class="seg-btn active" data-val="true">On</button>
+          </div>
+          <div class="ctrl-sublabel">QR Linked URL</div>
+          <input type="text" id="qrUrlInput" class="ctrl-input" placeholder="https://yourwebsite.com">
+          <div class="ctrl-sublabel">QR Size</div>
+          <div class="slider-row">
+            <input type="range" id="qrSizeSlider" min="40" max="110" step="1" value="65">
+            <span class="slider-val" id="qrSizeVal">65px</span>
+          </div>
+          <div class="ctrl-sublabel" style="margin-top:14px">QR Position</div>
+          <div class="seg-ctrl" id="qrPosGroup">
+            <button class="seg-btn" data-pos="left">Left</button>
+            <button class="seg-btn active" data-pos="center">Center</button>
+            <button class="seg-btn" data-pos="right">Right</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <p class="panel-note">✦ luxury control · scannable tech</p>
+      </aside>
+
+      <!-- CENTER PANEL -->
+      <main class="center-panel">
+        <div class="preview-eyebrow">Live 3D Preview</div>
+
+        <div class="card-entrance-wrapper loaded" id="previewContainer"
+          style="max-width: 480px; width: 100%; margin: 0 auto;">
+          <div class="card-container-3d" id="livePreviewCard">
+            <div class="card-3d-wrapper">
+              <div class="card-3d-inner" id="livePreviewInner">
+                <!-- FRONT -->
+                <div class="card-face-3d front golden-glow">
+                  <canvas id="previewCanvasFront" class="card-canvas-3d" width="600" height="378"></canvas>
+                  <div class="card-shine"></div>
+                </div>
+                <!-- BACK -->
+                <div class="card-face-3d back golden-glow">
+                  <canvas id="previewCanvasBack" class="card-canvas-3d" width="600" height="378"></canvas>
+                  <div class="card-shine"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="rotate-hint">
+          <span class="arrow">↻</span>
+          Click to flip &nbsp;·&nbsp; Hover to tilt
+        </p>
+
+        <!-- Pills -->
+        <div class="action-pills">
+          <button class="pill-btn material-pill" id="matToggleBtn" onclick="toggleMat()">Material</button>
+          <button class="pill-btn proceed-pill lux-primary-btn" id="proceedPillBtn" onclick="saveAndProceed()">
+            <div class="lux-sheen"></div>
+            <span class="lux-text">Proceed</span>
+            <span class="lux-arrow">→</span>
+          </button>
+        </div>
+
+        <!-- INLINE MATERIALS — hidden by default -->
+        <div class="inline-mat" id="inlineMat">
+          <div class="imat-head">
+            <span class="imat-title">Select Material</span>
+            <button class="imat-close" onclick="toggleMat()">✕</button>
+          </div>
+          <div class="imat-tabs" id="imatTabs">
+            <button class="imat-tab active" onclick="switchTab('metal',this)">Metal</button>
+            <button class="imat-tab" onclick="switchTab('wood',this)">Wood</button>
+            <button class="imat-tab" onclick="switchTab('carbon',this)">Carbon</button>
+            <button class="imat-tab" onclick="switchTab('limited',this)">Limited</button>
+          </div>
+          <div class="imat-grid" id="imatGrid"></div>
+        </div>
+
+
+      </main>
+
+      <aside class="right-panel" data-lenis-prevent>
+        <div class="rp-top">
+          <div class="rp-title">Pre-Build & Coustomize Templates</div>
+          <div class="rp-q">?</div>
+        </div>
+        <p class="rp-sub">Choose a design to get started</p>
+
+        <!-- Design Upload Section -->
+        <div class="design-upload-section">
+          <div class="design-upload-label">✦ Upload Your Design</div>
+            <div class="design-drop-zone" id="matDesignZone"
+              ondragover="event.preventDefault(); this.classList.add('drag-over')"
+              ondragleave="this.classList.remove('drag-over')"
+              ondrop="event.preventDefault(); this.classList.remove('drag-over'); if(event.dataTransfer.files[0]) handleMatDesignUpload(event.dataTransfer.files[0])">
+            <input type="file" id="matDesignInput" accept=".svg,.png,image/svg+xml,image/png"
+              onchange="if(this.files[0]) handleMatDesignUpload(this.files[0])">
+            <span class="design-drop-icon">🎨</span>
+            <div class="design-drop-text">Drop SVG or PNG here<br>or click to browse</div>
+            <span class="design-drop-sub">Transparent PNG & SVG supported · Safe-zone auto-scaled</span>
+          </div>
+          <div class="design-preview-strip" id="matDesignPreview">
+            <img class="design-preview-thumb" id="matDesignThumb" src="" alt="Design preview">
+            <div class="design-preview-info">
+              <div class="design-preview-name" id="matDesignName">—</div>
+              <div class="design-preview-size" id="matDesignSize"></div>
+            </div>
+            <button class="design-remove-btn"
+              onclick="removeDesign(); document.getElementById('matDesignPreview').classList.remove('visible'); document.getElementById('matDesignOpacityRow').style.display='none'">Remove</button>
+          </div>
+          <div class="design-opacity-row" id="matDesignOpacityRow" style="display:none">
+            <span class="design-opacity-label">Opacity</span>
+            <input type="range" id="matDesignOpacity" min="10" max="100" step="1" value="85"
+              oninput="S.cd.designOpacity = this.value/100; if(typeof state!=='undefined'&&state.cardData)state.cardData.designOpacity=this.value/100; updateMain();"
+              style="flex:1; accent-color: #c9a962;">
+            <span class="design-opacity-label" id="matDesignOpacityVal">85%</span>
+          </div>
+        </div>
+
+        <div class="rp-tabs" id="tplTabs">
+          <button class="rp-tab active" onclick="filterTpl('all',this)">All</button>
+          <button class="rp-tab" onclick="filterTpl('minimal',this)">Minimal</button>
+          <button class="rp-tab" onclick="filterTpl('editorial',this)">Luxury</button>
+        </div>
+        <div class="tpl-grid" id="tplGrid"></div>
+      </aside>
+
+
+    </div>
+  </div>
+
+
+  <section class="lux-slider-section">
+
+    <div class="lux-slider">
+
+      <!-- Row 1 -->
+      <div class="lux-row">
+        <div class="lux-card"><img src="image/slide (1).webp" /></div>
+        <div class="lux-card"><img src="image/slide (2).webp" /></div>
+        <div class="lux-card"><img src="image/slide (3).webp" /></div>
+        <div class="lux-card"><img src="image/slide (4).webp" /></div>
+        <!-- <div class="lux-card"><img src="https://images.unsplash.com/photo-1557683316-973673baf926"/></div> -->
+      </div>
+
+      <!-- Row 2 -->
+      <div class="lux-row reverse">
+        <div class="lux-card"><img src="image/slide (5).webp" /></div>
+        <div class="lux-card"><img src="image/slide (6).webp" /></div>
+        <div class="lux-card"><img src="image/slide (7).webp" /></div>
+        <div class="lux-card"><img src="image/slide (8).webp" /></div>
+        <!-- <div class="lux-card"><img src="https://images.unsplash.com/photo-1492724441997-5dc865305da7"/></div> -->
+      </div>
+
+    </div>
+
+    <div class="lux-text-center">
+      <h2>Designers Build Multiple Cards</h2>
+      <a href="#" class="lux-btn">DESIGN FOR YOU</a>
+    </div>
+
+  </section>
+
+
+  <div class="toast" id="toast"></div>
+
+
+  <!-- Luxury Footer -->
+  <footer class="lux-footer">
+    <div class="footer-inner">
+
+      <!-- Logo Image -->
+      <div class="footer-logo">
+        <img src="image/Untitled design (15).png" alt="Cardel Logo">
+      </div>
+
+      <nav class="footer-nav">
+        <a href="#" data-target="hero">Design</a>
+        <a href="#" data-target="steps-section">Steps</a>
+        <a href="#" data-target="about-section">About</a>
+        <a href="order.html" onclick="saveToStorage()">Order</a>
+        <a href="#" data-target="contact-section">Contact</a>
+
+      </nav>
+
+      <div class="footer-social">
+        <a href="#" aria-label="Instagram">Instagram</a>
+        <a href="#" aria-label="Facebook">Facebook</a>
+        <a href="#" aria-label="Pinterest">Pinterest</a>
+      </div>
+
+    </div>
+  </footer>
+
+  <script>
+    /* ─── STATE ─── */
+    const S = {
+      cd: {
+        name: 'Malik Huzaifa', title: 'Creative Director',
+        number: '+1 (555) 000-0000', email: 'hello@cardel.com',
+        website: '', initials: 'MH',
+        material: 'gunmetal', nameSize: 32, numberSize: 18,
+        align: 'center', logoSize: 42, logoPos: 'center',
+        templateStyle: 'classic', font: "'DM Sans',sans-serif",
+        showQR: true, qrSize: 65, qrPos: 'center', qrUrl: 'https://cardel.com'
+      },
+      selTpl: 'editorial', flipped: false, matOpen: false,
+      isDirty: true, contrastFactor: 0 // Initialize for smooth transition
+    };
+
+    function getYIQBrightness(hex) {
+      if (!hex || hex[0] !== '#') return 0;
+      const r = parseInt(hex.substring(1, 3), 16);
+      const g = parseInt(hex.substring(3, 5), 16);
+      const b = parseInt(hex.substring(5, 7), 16);
+      return (r * 299 + g * 587 + b * 114) / 1000;
+    }
+
+    /* ─── DATA ACCESS ─── */
+    function getMat(id) {
+      for (const cat in state.materials) {
+        const found = state.materials[cat].find(m => m.id === id);
+        if (found) return found;
+      }
+      return state.materials.metal[0];
+    }
+
+    function getTpl(id) {
+      return state.templates.find(t => t.id === id);
+    }
+
+    /* ─── CANVAS DRAW ─── */
+    /* ─── CANVAS DRAW (HDR STYLE) ─── */
+    function adjustBrightness(col, amt) {
+      let usePound = false;
+      if (col[0] == "#") { col = col.slice(1); usePound = true; }
+      let num = parseInt(col, 16);
+      let r = (num >> 16) + amt;
+      if (r > 255) r = 255; else if (r < 0) r = 0;
+      let b = ((num >> 8) & 0x00FF) + amt;
+      if (b > 255) b = 255; else if (b < 0) b = 0;
+      let g = (num & 0x0000FF) + amt;
+      if (g > 255) g = 255; else if (g < 0) g = 0;
+      return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
+    }
+
+    function isDarkMaterial(id) {
+      const mat = getMat(id);
+      if (!mat) return true;
+      return getYIQBrightness(mat.color || '#000000') < 128;
+    }
+
+    function paintBg(ctx, w, h, mat) {
+      if (mat.cf) {
+        // Deep black base
+        const baseGrad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w);
+        baseGrad.addColorStop(0, '#1a1a1a');
+        baseGrad.addColorStop(1, '#0d0d0d');
+        ctx.fillStyle = baseGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.save();
+        const size = w / 50;
+        const cols = Math.ceil(w / size);
+        const rows = Math.ceil(h / size);
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
+            const x = col * size, y = row * size;
+            const isEven = (row + col) % 2 === 0;
+            ctx.fillStyle = isEven ? 'rgba(42,42,42,0.6)' : 'rgba(10,10,10,0.6)';
+            ctx.fillRect(x, y, size, size);
+          }
+        }
+        ctx.restore();
+      } else if (['walnut', 'ebony', 'mahogany', 'birch', 'maple'].includes(mat.id)) {
+        ctx.fillStyle = mat.color || (mat.c ? mat.c[0] : '#3d2008');
+        ctx.fillRect(0, 0, w, h);
+        ctx.save();
+        ctx.globalAlpha = 0.15;
+        ctx.strokeStyle = '#000';
+        for (let i = 0; i < 30; i++) {
+          const x = (i / 30) * w;
+          ctx.beginPath(); ctx.moveTo(x, 0);
+          let cx = x;
+          for (let y = 0; y < h; y += 10) {
+            cx += (Math.random() - 0.5) * 4;
+            ctx.lineTo(cx, y);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      } else {
+        // HDR metal: multi-stop diagonal to simulate light-catching
+        const color = mat.color || (mat.c ? mat.c[0] : '#999');
+        const g = ctx.createLinearGradient(0, 0, w, h);
+        g.addColorStop(0, adjustBrightness(color, -35));
+        g.addColorStop(0.22, adjustBrightness(color, -12));
+        g.addColorStop(0.42, adjustBrightness(color, 28));
+        g.addColorStop(0.58, adjustBrightness(color, 10));
+        g.addColorStop(0.78, adjustBrightness(color, -10));
+        g.addColorStop(1, adjustBrightness(color, -30));
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, w, h);
+        // Specular highlight strip
+        ctx.save();
+        const sp = ctx.createLinearGradient(0, 0, w * 0.6, h * 0.4);
+        sp.addColorStop(0, 'rgba(255,255,255,0)');
+        sp.addColorStop(0.38, 'rgba(255,255,255,0.12)');
+        sp.addColorStop(0.5, 'rgba(255,255,255,0.22)');
+        sp.addColorStop(0.62, 'rgba(255,255,255,0.08)');
+        sp.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sp;
+        ctx.fillRect(0, 0, w, h);
+        ctx.restore();
+      }
+      // Vignette
+      const v = ctx.createRadialGradient(w / 2, h / 2, w / 3, w / 2, h / 2, w);
+      v.addColorStop(0, 'rgba(0,0,0,0)');
+      v.addColorStop(1, 'rgba(0,0,0,0.22)');
+      ctx.fillStyle = v;
+      ctx.fillRect(0, 0, w, h);
+
+      // ── Grain / Noise Texture ──
+      ctx.save();
+      ctx.globalAlpha = 0.038;
+      ctx.globalCompositeOperation = 'overlay';
+      const grainCanvas = document.createElement('canvas');
+      grainCanvas.width = w; grainCanvas.height = h;
+      const gc = grainCanvas.getContext('2d');
+      const imgData = gc.createImageData(w, h);
+      const data = imgData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const v2 = Math.floor(Math.random() * 255);
+        data[i] = v2; data[i + 1] = v2; data[i + 2] = v2; data[i + 3] = 255;
+      }
+      gc.putImageData(imgData, 0, 0);
+      ctx.drawImage(grainCanvas, 0, 0, w, h);
+      ctx.restore();
+    }
+
+    function drawCornerAccent(ctx, x, y, size, color, isTop, isInverted = false) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.6;
+
+      // Add subtle glow
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 5;
+
+      ctx.beginPath();
+      if (isTop && !isInverted) {
+        ctx.moveTo(x, y + size);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x + size, y);
+      } else if (!isTop && !isInverted) {
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x - size, y);
+      } else if (isTop && isInverted) {
+        ctx.moveTo(x, y + size);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x - size, y);
+      } else {
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x + size, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Auto-Contrast Utility (YIQ)
+    function paintFront(ctx, w, h, mat, cd) {
+      const scale = w / 600;
+      const brightness = getYIQBrightness(mat.color || '#999');
+      const isDark = brightness < 128;
+
+      // Smooth color interpolation using GSAP managed state
+      // S.contrastFactor (0 = Dark material/White text, 1 = Light material/Black text)
+      const cf = S.contrastFactor !== undefined ? S.contrastFactor : (isDark ? 0 : 1);
+      
+      const interpColor = (c1, c2, f) => {
+        const r1 = parseInt(c1.substring(1,3), 16), g1 = parseInt(c1.substring(3,5), 16), b1 = parseInt(c1.substring(5,7), 16);
+        const r2 = parseInt(c2.substring(1,3), 16), g2 = parseInt(c2.substring(3,5), 16), b2 = parseInt(c2.substring(5,7), 16);
+        const r = Math.round(r1 + (r2 - r1) * f), g = Math.round(g1 + (g2 - g1) * f), b = Math.round(b1 + (b2 - b1) * f);
+        return `rgb(${r},${g},${b})`;
+      };
+
+      // Base colors for interpolation
+      const white = '#ffffff';
+      const black = '#1a1a1a';
+      const gold = '#c9a962';
+
+      const textColor = interpColor(white, black, cf);
+      const subTextColor = interpColor(isDark ? '#aaaaaa' : '#ffffff', '#4a4a4a', cf);
+      const accentColor = interpColor(gold, '#8a7038', cf);
+
+      // Corner accents (Premium style)
+      drawCornerAccent(ctx, 30 * scale, 30 * scale, 20 * scale, accentColor, true);
+      drawCornerAccent(ctx, w - 30 * scale, h - 30 * scale, 20 * scale, accentColor, false);
+
+      // Content Layout (Home page sync)
+      const align = cd.align || 'left';
+      let contentX = 60 * scale;
+      if (align === 'center') contentX = w / 2;
+      else if (align === 'right') contentX = w - 60 * scale;
+
+      const contentY = h / 2 - 20 * scale;
+
+      // Luxury Branding (Logo or Monogram)
+      const brandingY = contentY - (cd.logoSize || 32) * scale * 1.5 - 25 * scale;
+      const lp = cd.logoPos || 'center';
+      const bSize = (cd.logoSize || 32) * scale * 1.5;
+      let bx = lp === 'center' ? (w - bSize) / 2 : (lp === 'flex-end' ? w - bSize - 60 * scale : 60 * scale);
+
+      // Tier 14 - Logic Synchronization
+      const lType = (cd.logoImg && cd.logoImg.width > 0) ? 'logo' : (cd.logoType || 'initials');
+
+      if (lType === 'logo' && cd.logoImg && cd.logoImg.width > 0) {
+        let lw = bSize;
+        let lh = cd.logoImg.height * (lw / cd.logoImg.width);
+        let lx = lp === 'center' ? (w - lw) / 2 : (lp === 'flex-end' ? w - lw - 60 * scale : 60 * scale);
+        let ly = contentY - lh - 25 * scale;
+        ctx.globalAlpha = 1; ctx.drawImage(cd.logoImg, lx, ly, lw, lh);
+      } else if (lType === 'initials' && cd.initials) {
+        ctx.save();
+        // High-Contrast design for luxury metals
+        ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.1)';
+        ctx.shadowBlur = 5 * scale;
+        // Subtle circle border
+        ctx.beginPath();
+        ctx.arc(bx + bSize / 2, brandingY + bSize / 2, bSize / 2, 0, Math.PI * 2);
+        ctx.strokeStyle = accentColor;
+        ctx.lineWidth = 1 * scale;
+        ctx.stroke();
+
+        // Initials Text
+        ctx.font = `300 ${bSize * 0.35}px "Playfair Display"`;
+        ctx.fillStyle = textColor; // Flipped to black/white per requirement
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(cd.initials.toUpperCase(), bx + bSize / 2, brandingY + bSize / 2);
+        ctx.restore();
+      }
+
+      // Name (Premium Italic)
+      ctx.save();
+      ctx.shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.1)';
+      ctx.shadowBlur = 4 * scale;
+
+      ctx.font = `italic ${(cd.nameSize || 32) * scale * 1.3}px "Cormorant Garamond"`;
+      ctx.fillStyle = textColor;
+      ctx.textAlign = align;
+      ctx.fillText(cd.name || 'YOUR NAME', contentX, contentY);
+      ctx.restore();
+
+      // Title (Inter Light)
+      const titleSize = Math.max(10, (cd.nameSize || 32) / 2.5);
+      ctx.font = `300 ${titleSize * scale}px Inter`;
+      ctx.fillStyle = subTextColor;
+      ctx.textAlign = align;
+      ctx.letterSpacing = '0.12em';
+      ctx.fillText(cd.title || 'DESIGN DIRECTOR', contentX, contentY + (cd.nameSize ? cd.nameSize * 0.9 : 28) * scale);
+
+      // Divider (Gradient Style)
+      const divWidth = 80 * scale;
+      const divGrad = ctx.createLinearGradient(contentX, 0, contentX + divWidth, 0);
+      divGrad.addColorStop(0, accentColor);
+      divGrad.addColorStop(1, isDark ? 'rgba(201,169,98,0.3)' : 'rgba(201,169,98,0.6)');
+      ctx.strokeStyle = divGrad;
+      ctx.lineWidth = 1.5 * scale;
+      ctx.beginPath();
+      if (align === 'center') {
+        ctx.moveTo(contentX - divWidth / 2, contentY + 45 * scale);
+        ctx.lineTo(contentX + divWidth / 2, contentY + 45 * scale);
+      } else if (align === 'right') {
+        ctx.moveTo(contentX - divWidth, contentY + 45 * scale);
+        ctx.lineTo(contentX, contentY + 45 * scale);
+      } else {
+        ctx.moveTo(contentX, contentY + 45 * scale);
+        ctx.lineTo(contentX + divWidth, contentY + 45 * scale);
+      }
+      ctx.stroke();
+
+      // Contact Info (Inter)
+      const contactY = h - 70 * scale;
+      ctx.font = `400 ${(cd.numberSize || 18) * scale}px Inter`;
+      ctx.fillStyle = textColor;
+      ctx.textAlign = align;
+      ctx.fillText(cd.number || '+1 (555) 000-0000', contentX, contactY);
+
+      ctx.font = `300 ${((cd.numberSize || 18) - 1) * scale}px Inter`;
+      ctx.fillStyle = subTextColor;
+      ctx.textAlign = align;
+      ctx.fillText(cd.email || 'hello@cardel.com', contentX, contactY + ((cd.numberSize || 18) + 4) * scale);
+
+      // ─── Premium Icons: NFC & Ambient Waves (Sync with Home) ────
+      const iconColor = textColor;
+      const iconSize = 36 * scale;
+
+      // NFC Icon (Top Right)
+      {
+        const centerX = w - 85 * scale;
+        const centerY = 55 * scale;
+        ctx.save();
+        ctx.strokeStyle = iconColor;
+        ctx.lineWidth = iconSize * 0.14;
+        ctx.lineCap = 'round';
+        ctx.strokeRect(centerX - iconSize * 0.35, centerY - iconSize * 0.35, iconSize * 0.7, iconSize * 0.7);
+        for (let i = 1; i <= 3; i++) {
+          let r = iconSize * 0.32 + i * iconSize * 0.10;
+          ctx.beginPath();
+          ctx.arc(centerX + iconSize * 0.08, centerY, r, Math.PI * 1.05, Math.PI * 1.95, false);
+          ctx.stroke();
+        }
+        ctx.font = `500 ${11 * scale}px Inter`;
+        ctx.fillStyle = iconColor;
+        ctx.textAlign = 'center';
+        ctx.fillText("NFC", centerX, centerY + iconSize * 0.58);
+        ctx.restore();
+      }
+
+      // Waves/Wifi Icon (Bottom Right)
+      {
+        const centerX = w - 85 * scale;
+        const centerY = h - 55 * scale;
+        ctx.save();
+        ctx.strokeStyle = iconColor;
+        ctx.lineWidth = iconSize * 0.13;
+        ctx.lineCap = 'round';
+        for (let i = 1; i <= 4; i++) {
+          let r = iconSize * 0.18 * i;
+          ctx.globalAlpha = 0.35 + i * 0.16;
+          ctx.beginPath();
+          ctx.arc(centerX, centerY - iconSize * 0.12, r, Math.PI * 1.2, Math.PI * 1.8, false);
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = iconColor;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY - iconSize * 0.12, iconSize * 0.09, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function paintBack(ctx, w, h, mat, cd) {
+      const scale = w / 600;
+      const brightness = getYIQBrightness(mat.color || '#999');
+      const isDark = brightness < 128;
+      
+      const cf = S.contrastFactor !== undefined ? S.contrastFactor : (isDark ? 0 : 1);
+      const interpColor = (c1, c2, f) => {
+        const r1 = parseInt(c1.substring(1,3), 16), g1 = parseInt(c1.substring(3,5), 16), b1 = parseInt(c1.substring(5,7), 16);
+        const r2 = parseInt(c2.substring(1,3), 16), g2 = parseInt(c2.substring(3,5), 16), b2 = parseInt(c2.substring(5,7), 16);
+        const r = Math.round(r1 + (r2 - r1) * f), g = Math.round(g1 + (g2 - g1) * f), b = Math.round(b1 + (b2 - b1) * f);
+        return `rgb(${r},${g},${b})`;
+      };
+      
+      const gold = '#c9a962';
+      const accentColor = interpColor(gold, '#8a7038', cf);
+
+      // QR Code Rendering (Ultra-fast cached version)
+      if (S.cd.showQR && qrCache) {
+        const qs = S.cd.qrSize * scale * 2;
+        const qx = S.cd.qrPos === 'center' ? (w - qs) / 2 : (S.cd.qrPos === 'right' ? w - qs - 50 * scale : 50 * scale);
+        const qy = h - qs - 50 * scale;
+
+        ctx.save();
+        ctx.globalAlpha = 0.9;
+        // Luxury background glow for QR
+        ctx.fillStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)';
+        ctx.fillRect(qx - 5 * scale, qy - 5 * scale, qs + 10 * scale, qs + 10 * scale);
+        ctx.drawImage(qrCache, qx, qy, qs, qs);
+        ctx.restore();
+      }
+    }
+
+    const matOffCanvas = document.createElement('canvas');
+    const matOffCtx = matOffCanvas.getContext('2d');
+
+    function setupCanvases() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = 400, h = 252;
+      const tw = Math.floor(w * dpr), th = Math.floor(h * dpr);
+      matOffCanvas.width = tw; matOffCanvas.height = th;
+      ['previewCanvasFront', 'previewCanvasBack'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.width = tw; el.height = th; }
+      });
+    }
+
+    let qrCache = null;
+    let lastQR = "";
+
+    function drawOnCanvas(canvasId, side, w, h, matId) {
+      try {
+        const el = document.getElementById(canvasId);
+        if (!el) return;
+        const ctx = el.getContext('2d');
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const tw = Math.floor(w * dpr), th = Math.floor(h * dpr);
+
+        // QR Caching (Bulletproof Guarded)
+        if (S.cd.showQR) {
+          try {
+            const url = S.cd.qrUrl || S.cd.website || 'https://cardel.com';
+            
+            // Use current dynamic accent or text color for QR darkness
+            const brightness = getYIQBrightness(getMat(S.cd.material).color || '#000');
+            const qrColor = (S.contrastFactor !== undefined ? S.contrastFactor : (brightness < 128 ? 0 : 1)) > 0.5 ? '#1a1a1a' : '#ffffff';
+
+            if (!qrCache || lastQR !== url + qrColor) {
+              if (typeof QRCode !== 'undefined') {
+                const qrc = document.createElement('div');
+                new QRCode(qrc, { text: url, width: 256, height: 256, colorDark: qrColor, colorLight: "rgba(0,0,0,0)" });
+                const qrcanvas = qrc.querySelector('canvas');
+                if (qrcanvas) {
+                  qrCache = document.createElement('canvas');
+                  qrCache.width = 256; qrCache.height = 256;
+                  qrCache.getContext('2d').drawImage(qrcanvas, 0, 0);
+                  lastQR = url;
+                }
+              }
+            }
+          } catch (qe) { console.warn("QR Render inhibited", qe); }
+        }
+
+        // Buffer Drawing (Safety Reset)
+        matOffCtx.setTransform(1, 0, 0, 1, 0, 0);
+        matOffCtx.globalAlpha = 1;
+        matOffCtx.clearRect(0, 0, tw, th);
+        matOffCtx.scale(dpr, dpr);
+
+        // Safety Fallback for Material
+        const mat = getMat(matId || S.cd.material) || getMat('gunmetal');
+        paintBg(matOffCtx, w, h, mat);
+
+        // ── Design Upload Overlay — Full Bleed Mode (Rendered as Background) ──
+        try {
+          const designImg = S.cd.designImg || (typeof state !== 'undefined' && state.cardData && state.cardData.designImg);
+          if (designImg && designImg.width && designImg.height) {
+            const opacity = (S.cd.designOpacity !== undefined ? S.cd.designOpacity : (typeof state !== 'undefined' && state.cardData.designOpacity !== undefined ? state.cardData.designOpacity : 0.85));
+            matOffCtx.save();
+            matOffCtx.imageSmoothingEnabled = true;
+            matOffCtx.imageSmoothingQuality = 'high';
+            matOffCtx.globalAlpha = opacity;
+            matOffCtx.drawImage(designImg, 0, 0, w, h);
+            matOffCtx.restore();
+          }
+        } catch (de) { console.warn('Design overlay error', de); }
+
+        try {
+          if (side === 'front') paintFront(matOffCtx, w, h, mat, S.cd);
+          else paintBack(matOffCtx, w, h, mat, S.cd);
+        } catch (pe) { console.warn("Design Layer Error", pe); }
+
+        // Final Flicker-Free Composite
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(matOffCanvas, 0, 0);
+      } catch (criticalError) {
+        console.error("Immortal Shield Caught Error:", criticalError);
+        // Emergency "Safe Mode" Visuals
+        const el = document.getElementById(canvasId);
+        if (el) {
+          const ctx = el.getContext('2d');
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.fillStyle = '#111'; ctx.fillRect(0, 0, el.width, el.height);
+          ctx.fillStyle = '#c9a440'; ctx.font = 'bold 20px Playfair Display';
+          ctx.fillText("Stabilizing...", el.width * 0.1, el.height * 0.5);
+          ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '10px Inter';
+          ctx.fillText(criticalError.message, el.width * 0.1, el.height * 0.5 + 24);
+        }
+      }
+    }
+
+    function updateMain() {
+      S.isDirty = true;
+      // Heartbeat Safety: Always wake up the loop if it's ready
+      if (typeof S.wakeLoop === 'function') S.wakeLoop();
+      debouncedSave();
+    }
+
+    /* ─── TEMPLATE PANEL ─── */
+    function renderTpl(filter = 'all') {
+      const grid = document.getElementById('tplGrid'); grid.innerHTML = '';
+      const list = filter === 'all' ? state.templates : state.templates.filter(t => t.cat === filter);
+      list.forEach(tpl => {
+        const card = document.createElement('div');
+        card.className = `tpl-card${tpl.id === S.selTpl ? ' sel' : ''}`;
+        card.innerHTML = `
+      <div class="tpl-cw"><canvas id="tc_${tpl.id}"></canvas></div>
+      <div class="tpl-info"><span class="tpl-name">${tpl.name}</span><span class="tpl-arr">›</span></div>`;
+        card.onclick = () => {
+          S.selTpl = tpl.id; S.cd.material = tpl.mid;
+          document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('sel'));
+          card.classList.add('sel');
+          updateMain(); renderMat('metal'); save();
+          toast(tpl.name + ' selected');
+        };
+        grid.appendChild(card);
+        // draw canvas after layout
+        setTimeout(() => {
+          const c = document.getElementById('tc_' + tpl.id); if (!c) return;
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const w = c.offsetWidth || 148, h = c.offsetHeight || 93;
+          c.width = w * dpr; c.height = h * dpr;
+          const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+          const mat = getMat(tpl.mid);
+          paintBg(ctx, w, h, mat);
+          paintFront(ctx, w, h, mat, S.cd);
+        }, 30);
+      });
+    }
+
+    function filterTpl(cat, btn) {
+      document.querySelectorAll('#tplTabs .rp-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active'); renderTpl(cat);
+    }
+
+    /* ─── INLINE MATERIAL PANEL ─── */
+    function toggleMat() {
+      const panel = document.getElementById('inlineMat');
+      const btn = document.getElementById('matToggleBtn');
+      S.matOpen = !S.matOpen;
+      if (S.matOpen) {
+        panel.classList.add('vis');
+        btn.classList.add('mat-active');
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          panel.classList.add('anim');
+          panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }));
+      } else {
+        panel.classList.remove('anim');
+        btn.classList.remove('mat-active');
+        setTimeout(() => panel.classList.remove('vis'), 300);
+      }
+    }
+
+    function switchTab(cat, btn) {
+      document.querySelectorAll('#imatTabs .imat-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active'); renderMat(cat);
+    }
+
+    function renderMat(cat = 'metal') {
+      const grid = document.getElementById('imatGrid'); grid.innerHTML = '';
+      (state.materials[cat] || []).forEach(mat => {
+        const card = document.createElement('div');
+        card.className = `imat-card${mat.id === S.cd.material ? ' sel' : ''}`;
+        card.innerHTML = `
+      <div class="imat-thumb"><canvas id="mc_${mat.id}"></canvas></div>
+      ${mat.badge ? `<div class="imat-badge">${mat.badge}</div>` : ''}
+      <div class="imat-tick">✓</div>
+      <div class="imat-foot"><div class="imat-name">${mat.name}</div><div class="imat-spec">${mat.thickness} · ${mat.finish}</div></div>`;
+        card.onclick = () => {
+          S.cd.material = mat.id;
+          
+          // Smooth Contrast Transition (GSAP)
+          const newIsDark = getYIQBrightness(mat.color || '#000') < 128;
+          const targetCF = newIsDark ? 0 : 1;
+          if (S.contrastFactor === undefined) S.contrastFactor = S.cd.material === 'gunmetal' ? 0 : 1;
+          
+          gsap.to(S, {
+            contrastFactor: targetCF,
+            duration: 0.6,
+            ease: "power2.inOut",
+            onUpdate: () => { S.isDirty = true; if(S.wakeLoop) S.wakeLoop(); }
+          });
+
+          document.querySelectorAll('.imat-card').forEach(c => c.classList.remove('sel'));
+          card.classList.add('sel');
+          updateMain();
+          // Flash the card preview
+          const preview = document.getElementById('livePreviewCard');
+          if (preview) {
+            preview.classList.remove('mat-flash');
+            void preview.offsetWidth;
+            preview.classList.add('mat-flash');
+            preview.addEventListener('animationend', () => preview.classList.remove('mat-flash'), { once: true });
+          }
+          save(); renderTpl();
+          toast(mat.name + ' applied');
+        };
+        grid.appendChild(card);
+        // draw tiny canvas
+        setTimeout(() => {
+          const c = document.getElementById('mc_' + mat.id); if (!c) return;
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const w = c.offsetWidth || 90, h = 80;
+          c.width = w * dpr; c.height = h * dpr;
+          const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+          paintBg(ctx, w, h, mat);
+          paintFront(ctx, w, h, mat, S.cd);
+        }, 30);
+      });
+    }
+
+    /* ─── 3D CARD INTERACTIONS — UNCHANGED ─── */
+    function setup3d() {
+      const card = document.getElementById('livePreviewCard');
+      const inner = document.getElementById('livePreviewInner');
+      const wrap = document.getElementById('previewContainer');
+
+      card.addEventListener('click', () => {
+        S.flipped = !S.flipped;
+        if (S.flipped) card.classList.add('rotated');
+        else card.classList.remove('rotated');
+
+        // Master Flip-Refresh: Redraw everything to ensure absolute visibility
+        updateMain();
+        if (S.wakeLoop) S.wakeLoop();
+      });
+
+      let cx = 0, cy = 0, tx = 0, ty = 0, hov = false, raf = null;
+      let baseRotation = 0;
+
+      wrap.addEventListener('mouseenter', () => { hov = true; if (!raf) loop(); });
+      wrap.addEventListener('mousemove', e => {
+        if (!hov) return;
+        const r = wrap.getBoundingClientRect();
+        tx = ((e.clientY - r.top) / r.height - 0.5) * -10;
+        ty = ((e.clientX - r.left) / r.width - 0.5) * 10;
+      });
+      wrap.addEventListener('mouseleave', () => { hov = false; tx = ty = 0; });
+
+      function loop() {
+        const targetBase = S.flipped ? 180 : 0;
+
+        // Check if we are close enough to stop - but DON'T stop if we have a pending draw
+        if (!hov && !S.isDirty && Math.abs(tx - cx) < 0.01 && Math.abs(ty - cy) < 0.01 && Math.abs(targetBase - baseRotation) < 0.1) {
+          baseRotation = targetBase;
+          inner.style.transform = `rotateY(${baseRotation}deg) rotateX(0deg)`;
+          raf = null;
+          return;
+        }
+
+        // Interpolate
+        cx += (tx - cx) * .1;
+        cy += (ty - cy) * .1;
+        baseRotation += (targetBase - baseRotation) * 0.1;
+
+        // Invert horizontal tilt when flipped
+        const horizontalTilt = S.flipped ? -cy : cy;
+
+        if (inner) {
+          inner.style.transform = `rotateY(${baseRotation + horizontalTilt}deg) rotateX(${cx}deg)`;
+        }
+
+        if (S.isDirty) {
+          drawOnCanvas('previewCanvasFront', 'front', 400, 252, S.cd.material);
+          drawOnCanvas('previewCanvasBack', 'back', 400, 252, S.cd.material);
+          S.isDirty = false;
+        }
+
+        raf = requestAnimationFrame(loop);
+      }
+
+      // Expose a way to wake up the loop from outside
+      S.wakeLoop = () => { if (!raf) raf = requestAnimationFrame(loop); };
+    }
+
+    /* ─── CONTROLS ─── */
+    function wSl(id, vId, key) {
+      const el = document.getElementById(id), vEl = document.getElementById(vId); if (!el) return;
+      el.value = S.cd[key] || el.value; vEl.textContent = el.value + 'px';
+      el.addEventListener('input', () => { S.cd[key] = +el.value; vEl.textContent = el.value + 'px'; updateMain(); });
+    }
+    function wIn(id, key) {
+      const el = document.getElementById(id); if (!el) return;
+      el.value = S.cd[key] || el.value;
+      el.addEventListener('input', () => { S.cd[key] = el.value; updateMain(); });
+    }
+    function wSeg(gid, key) {
+      const el = document.getElementById(gid);
+      if (!el) return;
+      const btns = el.querySelectorAll('.seg-btn');
+      btns.forEach(b => {
+        // Initial active state
+        const bval = b.dataset.align || b.dataset.pos || b.dataset.style || b.dataset.val;
+        if (String(bval) === String(S.cd[key])) b.classList.add('active');
+        else b.classList.remove('active');
+
+        b.addEventListener('click', () => {
+          btns.forEach(x => x.classList.remove('active'));
+          b.classList.add('active');
+          const val = b.dataset.align || b.dataset.pos || b.dataset.style || b.dataset.val;
+          S.cd[key] = (val === 'true' ? true : (val === 'false' ? false : val));
+          updateMain();
+        });
+      });
+    }
+
+    /* ─── UTILS ─── */
+    function save() {
+      try {
+        // Load existing state to preserve other fields (like orderConfig)
+        const saved = localStorage.getItem('cardel_state');
+        let fullState = saved ? JSON.parse(saved) : { cardData: {}, orderConfig: {} };
+
+        // Update only the cardData part with our current editor state
+        fullState.cardData = Object.assign({}, fullState.cardData, S.cd);
+
+        localStorage.setItem('cardel_state', JSON.stringify(fullState));
+        // Also keep the legacy key for safety if needed by other components
+        localStorage.setItem('cardel', JSON.stringify({ cd: S.cd, selTpl: S.selTpl }));
+      } catch (e) {
+        console.error("Save failed", e);
+      }
+    }
+
+    let saveTimer = null;
+    function debouncedSave() {
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(save, 1000);
+    }
+
+    function load() {
+      try {
+        const globalSaved = localStorage.getItem('cardel_state');
+        if (globalSaved) {
+          const parsed = JSON.parse(globalSaved);
+          if (parsed.cardData) {
+            Object.assign(S.cd, parsed.cardData);
+            // Force-Heal invalid material ID
+            if (!getMat(S.cd.material)) S.cd.material = 'gunmetal';
+
+            // Restore Logo from persistence
+            if (S.cd.logoDataUrl) {
+              const img = new Image();
+              img.onload = () => { S.cd.logoImg = img; updateMain(); };
+              img.src = S.cd.logoDataUrl;
+            }
+          }
+        } else {
+          const legacySaved = localStorage.getItem('cardel');
+          if (legacySaved) {
+            const d = JSON.parse(legacySaved);
+            if (d.cd) Object.assign(S.cd, d.cd);
+            if (d.selTpl) S.selTpl = d.selTpl;
+            if (S.cd.material && !getMat(S.cd.material)) S.cd.material = 'gunmetal';
+          }
+        }
+      } catch (e) { console.error("Load failed", e); }
+    }
+    function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2800); }
+    function saveAndProceed() { save(); toast('Saving your design…'); setTimeout(() => { window.location.href = 'order.html'; }, 1000); }
+
+    /* ─── INIT ─── */
+    window.addEventListener('load', () => {
+      // Initialize Lenis Smooth Scrolling
+      const lenis = new Lenis({
+        lerp: 0.03, // Smoother linear interpolation (refined for faster response)
+        orientation: 'vertical',
+        gestureOrientation: 'vertical',
+        smoothWheel: true,
+        wheelMultiplier: 0.9,
+        smoothTouch: false,
+      });
+
+      window.lenis = lenis;
+      document.documentElement.classList.add('lenis');
+
+      // Sync GSAP ScrollTrigger with Lenis
+      lenis.on('scroll', () => {
+        if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.update();
+      });
+
+      // GSAP Ticker for Lenis
+      gsap.ticker.add((time) => {
+        lenis.raf(time * 1000);
+      });
+      gsap.ticker.lagSmoothing(0);
+
+      load();
+      wSl('nameSize', 'nameSizeVal', 'nameSize');
+      wSl('numberSize', 'numberSizeVal', 'numberSize');
+      wSl('logoSizer', 'logoSizeVal', 'logoSize');
+      wIn('cardName', 'name'); wIn('cardNumber', 'number'); wIn('cardEmail', 'email'); wIn('initials', 'initials');
+
+      wSeg('alignGroup', 'align'); wSeg('logoPosGroup', 'logoPos');
+
+      document.getElementById('fontSelect').addEventListener('change', e => { S.cd.font = e.target.value; updateMain(); save(); });
+
+      const logoInput = document.getElementById('logoFileInput');
+      document.getElementById('uploadLogoBtn').addEventListener('click', () => {
+        logoInput.click();
+        // Ensure we are viewing the FRONT where the logo is
+        const card = document.getElementById('livePreviewCard');
+        if (S.flipped) {
+          S.flipped = false;
+          card.classList.remove('rotated');
+          if (S.wakeLoop) S.wakeLoop();
+        }
+      });
+
+      logoInput.addEventListener('change', function (e) {
+        if (e.target.files && e.target.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function (ev) {
+            S.cd.logoDataUrl = ev.target.result; // Save securely
+            const img = new Image();
+            img.onload = function () {
+              S.cd.logoImg = img;
+              updateMain();
+              save();
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      });
+
+      document.getElementById('removeLogoBtn').addEventListener('click', function () {
+        S.cd.logoImg = null;
+        S.cd.logoDataUrl = null;
+        logoInput.value = '';
+        updateMain();
+        save();
+      });
+
+      // QR Controls Init
+      wSl('qrSizeSlider', 'qrSizeVal', 'qrSize');
+      wIn('qrUrlInput', 'qrUrl');
+      wSeg('qrToggleGroup', 'showQR');
+      wSeg('qrPosGroup', 'qrPos');
+
+      renderTpl();
+      renderMat('metal');
+      setupCanvases();
+
+      // ── Design Upload handler for Materials page ──
+      window.handleMatDesignUpload = function (file) {
+        if (!file) return;
+        // Read once, set both S.cd.designImg AND state.cardData.designImg
+        const validTypes = ['image/png', 'image/svg+xml'];
+        if (!validTypes.includes(file.type)) {
+          toast('Only SVG or transparent PNG allowed'); return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = e.target.result;
+          const img = new Image();
+          img.onload = () => {
+            // ── Populate BOTH state sources ──
+            S.cd.designImg = img;
+            S.cd.designDataUrl = dataUrl;
+            S.cd.designOpacity = 0.85;
+            if (typeof state !== 'undefined' && state.cardData) {
+              state.cardData.designImg = img;
+              state.cardData.designDataUrl = dataUrl;
+              state.cardData.designOpacity = 0.85;
+            }
+            // ── Show preview strip ──
+            const strip = document.getElementById('matDesignPreview');
+            const thumb = document.getElementById('matDesignThumb');
+            const nameEl = document.getElementById('matDesignName');
+            const sizeEl = document.getElementById('matDesignSize');
+            const opRow = document.getElementById('matDesignOpacityRow');
+            if (strip) { thumb.src = dataUrl; strip.classList.add('visible'); }
+            if (nameEl) nameEl.textContent = file.name;
+            if (sizeEl) sizeEl.textContent = (file.size / 1024).toFixed(1) + ' KB';
+            if (opRow) opRow.style.display = 'flex';
+            // ── Sync opacity slider ──
+            const opSlider = document.getElementById('matDesignOpacity');
+            const opVal = document.getElementById('matDesignOpacityVal');
+            if (opSlider) {
+              opSlider.value = 85;
+              opSlider.oninput = () => {
+                const v = opSlider.value / 100;
+                S.cd.designOpacity = v;
+                if (typeof state !== 'undefined' && state.cardData) state.cardData.designOpacity = v;
+                if (opVal) opVal.textContent = opSlider.value + '%';
+                updateMain();
+              };
+            }
+            // ── Redraw cards ──
+            updateMain();
+            toast('✦ Design applied fully');
+          };
+          img.src = dataUrl;
+        };
+        reader.readAsDataURL(file);
+      };
+
+      window.removeDesign = function() {
+        S.cd.designImg = null;
+        S.cd.designDataUrl = null;
+        if (typeof state !== 'undefined' && state.cardData) {
+          state.cardData.designImg = null;
+          state.cardData.designDataUrl = null;
+        }
+        updateMain();
+        toast('✦ Design removed');
+      };
+
+      // Restore existing design on page load (if uploaded on another page)
+      if (state.cardData && state.cardData.designDataUrl) {
+        const strip = document.getElementById('matDesignPreview');
+        const thumb = document.getElementById('matDesignThumb');
+        const opRow = document.getElementById('matDesignOpacityRow');
+        if (strip && thumb) {
+          thumb.src = state.cardData.designDataUrl;
+          strip.classList.add('visible');
+        }
+        if (opRow) opRow.style.display = 'flex';
+      }
+
+
+      // Tier 10 Initialization Shift:
+      // We must set up the 3D engine BEFORE we try to wake it up
+      setup3d();
+
+      // Force-Initial Paint (Absolute Visibility Guard)
+      // We paint once now, and again after a tiny delay to ensure the GPU is ready
+      drawOnCanvas('previewCanvasFront', 'front', 400, 252, S.cd.material);
+      drawOnCanvas('previewCanvasBack', 'back', 400, 252, S.cd.material);
+
+      setTimeout(() => {
+        updateMain();
+        drawOnCanvas('previewCanvasFront', 'front', 400, 252, S.cd.material);
+        drawOnCanvas('previewCanvasBack', 'back', 400, 252, S.cd.material);
+      }, 50);
+
+      // ── Sync range slider fill tracks ──
+      document.querySelectorAll('input[type="range"]').forEach(r => {
+        function syncFill() {
+          const pct = ((r.value - r.min) / (r.max - r.min)) * 100;
+          r.style.setProperty('--val', pct + '%');
+        }
+        syncFill();
+        r.addEventListener('input', syncFill);
+      });
+
+      // ── GSAP Entrance Animations ──
+      gsap.set('.left-panel', { opacity: 0, x: -18 });
+      gsap.set('.right-panel', { opacity: 0, x: 18 });
+      gsap.set('.center-panel', { opacity: 0, y: 12 });
+
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.75 } });
+      tl.to('.left-panel', { opacity: 1, x: 0, duration: 0.7 }, 0)
+        .to('.center-panel', { opacity: 1, y: 0, duration: 0.8 }, 0.12)
+        .to('.right-panel', { opacity: 1, x: 0, duration: 0.7 }, 0.2);
+    });
+  </script>
+
+  <script>
+  // ===== LUXURY BUTTON INTERACTION ENGINE — materials page =====
+  ;(function initLuxButtons() {
+    'use strict'
+    function setup() {
+      if (typeof gsap === 'undefined') { requestAnimationFrame(setup); return }
+
+      // ── 1. Primary Luxury Buttons (Proceed, etc) ──
+      document.querySelectorAll('.lux-primary-btn').forEach(function(btn) {
+        const sheen = btn.querySelector('.lux-sheen')
+        const arrow = btn.querySelector('.lux-arrow')
+        const MAGNETIC_STRENGTH = 0.38
+        const MAGNETIC_RADIUS = 90
+
+        function onMouseMove(e) {
+          const rect = btn.getBoundingClientRect()
+          const dx = e.clientX - (rect.left + rect.width / 2)
+          const dy = e.clientY - (rect.top + rect.height / 2)
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < MAGNETIC_RADIUS) {
+            const f = (1 - dist / MAGNETIC_RADIUS) * MAGNETIC_STRENGTH
+            gsap.to(btn, { x: dx * f, y: dy * f, duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
+          } else {
+            gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: 'power2.out', overwrite: 'auto' })
+          }
+        }
+        document.addEventListener('mousemove', onMouseMove)
+
+        btn.addEventListener('mouseenter', function(e) {
+          if (sheen) {
+            const rect = btn.getBoundingClientRect()
+            const entryX = (e.clientX - rect.left) / rect.width
+            gsap.set(sheen, { left: (entryX * 100 - 80) + '%', opacity: 1 })
+            gsap.to(sheen, {
+              left: '130%', duration: 0.72, ease: 'power2.inOut',
+              onComplete: function() { gsap.set(sheen, { left: '-130%', opacity: 0 }) }
+            })
+          }
+          if (arrow) gsap.to(arrow, { x: 4, duration: 0.4, ease: 'power2.inOut' })
+        })
+
+        btn.addEventListener('mouseleave', function() {
+          if (arrow) gsap.to(arrow, { x: 0, duration: 0.4, ease: 'power2.inOut' })
+          gsap.to(btn, { x: 0, y: 0, scale: 1, duration: 0.6, ease: 'elastic.out(1, 0.5)', overwrite: 'auto' })
+        })
+
+        btn.addEventListener('mousedown', function() {
+          gsap.to(btn, { scale: 0.96, duration: 0.12, ease: 'power2.inOut' })
+        })
+        btn.addEventListener('mouseup', function() {
+          gsap.to(btn, { scale: 1, duration: 0.7, ease: 'elastic.out(1.2, 0.45)' })
+        })
+      })
+
+      // ── 2. Card Customizer Global Micro-Interactions ──
+      // This applies a subtle 'weighted' click feel to selectors, tabs, and ghost buttons
+      const panelElements = '.seg-btn, .ghost-btn, .rp-tab, .imat-card, .tpl-card, .design-drop-zone';
+      document.querySelectorAll(panelElements).forEach(function(el) {
+        el.addEventListener('mousedown', function() {
+          gsap.to(el, { scale: 0.97, duration: 0.15, ease: 'power2.out' });
+        });
+        el.addEventListener('mouseup', function() {
+          gsap.to(el, { scale: 1, duration: 0.5, ease: 'elastic.out(1.2, 0.5)' });
+        });
+        el.addEventListener('mouseleave', function() {
+          gsap.to(el, { scale: 1, duration: 0.5, ease: 'power2.out' });
+        });
+        
+        // Custom Ripple Logic for segment and ghost buttons
+        if (el.classList.contains('seg-btn') || el.classList.contains('ghost-btn')) {
+          el.addEventListener('mousemove', function(e) {
+            const rect = el.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            el.style.setProperty('--rx', x + '%');
+            el.style.setProperty('--ry', y + '%');
+          });
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setup)
+    } else {
+      setup()
+    }
+  })()
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARDEL - Atelier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" href="image/Untitled design (8).png" type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=3.3">
+    <base target="_self">
+</head>
+
+<body>
+<div class="header" style="height: auto; min-height: 100vh; position: relative;">
+    <!-- Fixed Video Background -->
+    <div class="mat-video-bg">
+      <video autoplay muted loop playsinline>
+        <source src="image/Untitled design (7).mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <div class="nav-left"></div>
+
+            <div class="nav-center">
+                <a href="index.html" target="_self">
+                    <div class="nav-logo">
+                        <img src="image/Untitled design (15).png" alt="">
+                    </div>
+                </a>
+            </div>
+
+            <div class="nav-right">
+                <a href="order.html" class="nav-begin" onclick="if(typeof saveToStorage === 'function') saveToStorage()">Order →</a>
+                <button type="button" class="site-mobile-menu-toggle" aria-label="Open menu" onclick="toggleSiteMobileMenu()">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="nav-divider">
+            <hr>
+        </div>
+
+        <div class="nav-links-wrapper">
+            <ul class="nav-links">
+                <li><a href="index.html" target="_self">Design</a></li>
+                <li><a href="materials.html" target="_self">Materials</a></li>
+                <li><a href="atelier.html" target="_self" class="active" style="color: var(--gold-light);">Atelier</a></li>
+                <li><a href="order.html" target="_self">Order</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="site-mobile-menu-backdrop" onclick="closeSiteMobileMenu()" hidden></div>
+    <div class="site-mobile-menu-drawer" hidden>
+        <a href="index.html" onclick="closeSiteMobileMenu()">Design</a>
+        <a href="materials.html" onclick="closeSiteMobileMenu()">Materials</a>
+        <a href="atelier.html" onclick="closeSiteMobileMenu()">Atelier</a>
+        <a href="order.html" onclick="closeSiteMobileMenu()">Order</a>
+    </div>
+
+    <!-- Atelier Hero -->
+    <section class="atelier-hero" style="text-align: center; padding-top: 15rem; padding-bottom: 5rem; position: relative; z-index: 2;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 4rem; color: #fff; line-height: 1;">The Atelier.</h1>
+        <p style="font-family: 'Inter', sans-serif; color: #ccc; max-width: 500px; margin: 1.5rem auto 0; font-weight: 300; font-size: 1.1rem;">
+            A gallery of our finest craftsmanship. Explore curated designs and premium materials.
+        </p>
+    </section>
+
+    <!-- Gallery Grid -->
+    <section class="atelier-gallery" style="max-width: 1400px; margin: 0 auto; padding: 2rem 4rem 10rem; position: relative; z-index: 2;">
+        <div class="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 3rem;">
+            <!-- Gallery Item 1 -->
+            <div class="gallery-item reveal-item" style="overflow: hidden; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);">
+                <div class="gallery-img-wrap" style="width: 100%; aspect-ratio: 16/10; overflow: hidden;">
+                    <img src="image/slide (2).webp" alt="Cardel Design" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                </div>
+                <div class="gallery-info" style="padding: 1.5rem;">
+                    <div style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #fff;">Carbon Pro Edition</div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #888; margin-top: 0.5rem;">Twill Weave Carbon Fiber</div>
+                </div>
+            </div>
+
+            <!-- Gallery Item 2 -->
+            <div class="gallery-item reveal-item" style="overflow: hidden; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);">
+                <div class="gallery-img-wrap" style="width: 100%; aspect-ratio: 16/10; overflow: hidden;">
+                    <img src="image/slide (3).webp" alt="Cardel Design" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                </div>
+                <div class="gallery-info" style="padding: 1.5rem;">
+                    <div style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #fff;">Signature Gold</div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #888; margin-top: 0.5rem;">24k Gold Metal · Mirror Finish</div>
+                </div>
+            </div>
+
+            <!-- Gallery Item 3 -->
+            <div class="gallery-item reveal-item" style="overflow: hidden; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);">
+                <div class="gallery-img-wrap" style="width: 100%; aspect-ratio: 16/10; overflow: hidden;">
+                    <img src="image/slide (4).webp" alt="Cardel Design" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                </div>
+                <div class="gallery-info" style="padding: 1.5rem;">
+                    <div style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #fff;">Minimalist Silver</div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #888; margin-top: 0.5rem;">Brushed Silver Metal</div>
+                </div>
+            </div>
+            
+            <!-- Gallery Item 4 -->
+            <div class="gallery-item reveal-item" style="overflow: hidden; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);">
+                <div class="gallery-img-wrap" style="width: 100%; aspect-ratio: 16/10; overflow: hidden;">
+                    <img src="image/about.png" alt="Cardel Design" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                </div>
+                <div class="gallery-info" style="padding: 1.5rem;">
+                    <div style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #fff;">Luxury Wood</div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #888; margin-top: 0.5rem;">African Ebony · High Polish</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+    <!-- Luxury Footer -->
+    <footer class="lux-footer" style="position: relative; z-index: 2;">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <img src="image/Untitled design (15).png" alt="Cardel Logo">
+            </div>
+            <nav class="footer-nav">
+                <a href="index.html">Design</a>
+                <a href="index.html#steps-section">Steps</a>
+                <a href="index.html#about-section">About</a>
+                <a href="order.html">Order</a>
+                <a href="index.html#contact-section">Contact</a>
+            </nav>
+            <div class="footer-social">
+                <a href="#" aria-label="Instagram">Instagram</a>
+                <a href="#" aria-label="Facebook">Facebook</a>
+                <a href="#" aria-label="Pinterest">Pinterest</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="shared.js?v=4.0"></script>
+    <script>
+        function toggleSiteMobileMenu() {
+            const open = !document.body.classList.contains('site-mobile-menu-open')
+            const backdrop = document.querySelector('.site-mobile-menu-backdrop')
+            const drawer = document.querySelector('.site-mobile-menu-drawer')
+            if (backdrop) backdrop.hidden = !open
+            if (drawer) drawer.hidden = !open
+            document.body.classList.toggle('site-mobile-menu-open', open)
+        }
+
+        function closeSiteMobileMenu() {
+            const backdrop = document.querySelector('.site-mobile-menu-backdrop')
+            const drawer = document.querySelector('.site-mobile-menu-drawer')
+            if (backdrop) backdrop.hidden = true
+            if (drawer) drawer.hidden = true
+            document.body.classList.remove('site-mobile-menu-open')
+        }
+
+        document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSiteMobileMenu() })
+
+        window.addEventListener('load', function() {
+            // Initialize Lenis
+            const lenis = new Lenis({
+                lerp: 0.03,
+                orientation: 'vertical',
+                gestureOrientation: 'vertical',
+                smoothWheel: true,
+                smoothTouch: false,
+            });
+            window.lenis = lenis;
+
+            // GSAP Ticker for Lenis
+            gsap.ticker.add((time) => {
+                lenis.raf(time * 1000);
+            });
+            gsap.ticker.lagSmoothing(0);
+
+            // Scroll Reveal Animation
+            gsap.utils.toArray('.reveal-item').forEach(item => {
+                gsap.fromTo(item, 
+                    { y: 50, opacity: 0 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 1,
+                        ease: "power3.out",
+                        scrollTrigger: {
+                            trigger: item,
+                            start: "top 85%",
+                            toggleActions: "play none none reverse"
+                        }
+                    }
+                );
+            });
+        });
+    </script>
+</body>
+</html>

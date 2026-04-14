@@ -6,229 +6,669 @@
     <title>CARDEL - Complete Your Order</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500&family=Inter:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.0">
+    <style>
+        /* 3D Card Premium Styles */
+        .final-card-container {
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto 2rem;
+            perspective: 2000px;
+            transform-style: preserve-3d;
+        }
+
+        .final-card-container:hover .card-float-wrapper {
+            transform: translateY(-15px) scale(1.02);
+        }
+        
+        .final-card-container:hover .card-face-3d {
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.116);
+        }
+
+        .card-float-wrapper {
+            width: 100%;
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            animation: floating 6s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+
+        .final-card-container:hover .card-float-wrapper {
+            animation-play-state: paused;
+        }
+
+        .card-3d-wrapper {
+            width: 100%;
+            aspect-ratio: 1.586;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+        }
+
+        .card-3d-wrapper.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+
+
+        .card-3d-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            pointer-events: none;
+        }
+
+        .card-face-3d {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transform-style: preserve-3d;
+        }
+
+        .card-face-3d.front {
+            transform: translateZ(1px);
+        }
+
+        .card-face-3d.back {
+            transform: rotateY(180deg) translateZ(1px);
+            background: #f8f8f8; /* Match page bg to ensure no transparency bleed */
+        }
+
+        .card-face-3d canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+
+
+        .card-shine {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(125deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 45%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 55%, rgba(255,255,255,0) 100%);
+            background-size: 200% 200%;
+            background-position: -100% -100%;
+            transition: background-position 0.2s ease-out;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .card-3d-wrapper.tilted .card-shine {
+            background-position: var(--shine-x, 0%) var(--shine-y, 0%);
+        }
+        
+        .flip-hint {
+            text-align: center;
+            margin-top: 1.25rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            color: #888;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Keep summary above sticky card layer when wide on desktop */
+        @media (min-width: 901px) {
+            .order-preview-section {
+                position: relative !important;
+                top: 0 !important;
+            }
+
+            #orderSummaryBox {
+                position: relative;
+                z-index: 10020;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="header">
+        <!-- Background Video -->
+        <video autoplay muted loop playsinline>
+            <source src="image/Untitled design (7).mp4" type="video/mp4">
+        </video>
+    </div>
+
     <!-- Same navbar -->
     <nav class="navbar" id="navbar">
         <div class="nav-inner">
             <div class="nav-left"></div>
             <div class="nav-center">
                <div class="nav-logo">
-    <video autoplay muted loop playsinline>
-        <source src="image/ecea5294010946da9c85d9af2cae86da.webm" type="video/mp4">
-    </video>
-</div>
+                    <img src="image/Untitled designs (16).png" alt="CARDEL" style="position: relative; top: 10px;">
+                </div>
             </div>
             <div class="nav-right">
                 <a href="index.html" class="nav-begin">← Back</a>
+                <button type="button" class="site-mobile-menu-toggle" aria-label="Open menu" onclick="toggleSiteMobileMenu()">
+                    <span></span><span></span><span></span>
+                </button>
             </div>
         </div>
         <div class="nav-divider"><hr></div>
         <div class="nav-links-wrapper">
             <ul class="nav-links">
                 <li><a href="index.html">Design</a></li>
-                <li><a href="index.html#materials">Materials</a></li>
+                <li><a href="materials.html">Materials</a></li>
                 <li><a href="#">Atelier</a></li>
                 <li><a href="order.html" class="active">Order</a></li>
-                <li><a href="#">Help</a></li>
             </ul>
         </div>
     </nav>
+    <div class="site-mobile-menu-backdrop" onclick="closeSiteMobileMenu()" hidden></div>
+    <div class="site-mobile-menu-drawer" hidden>
+        <a href="index.html" onclick="closeSiteMobileMenu()">Design</a>
+        <a href="materials.html" onclick="closeSiteMobileMenu()">Materials</a>
+        <a href="atelier.html" onclick="closeSiteMobileMenu()">Atelier</a>
+        <a href="order.html" onclick="closeSiteMobileMenu()">Order</a>
+    </div>
 
     <!-- Order Section Only -->
-    <section id="order" class="visible" style="padding-top: 140px; min-height: 100vh; opacity: 1;">
+    <section id="order" class="visible" style="padding-top: 20px; min-height: 100vh; opacity: 1;">
         <div class="order-container">
             <!-- Left Side - Configuration -->
             <div class="order-left">
-                <div class="order-header">
+                <div class="order-header" style="margin-bottom: 1rem;">
                     <span class="order-number">3</span>
                     <h2 class="order-title">Configuration & Order</h2>
                     <p class="order-subtitle">Finalize your card specifications and complete your order securely.</p>
                 </div>
 
-                <!-- Selected Design Summary -->
-                <div class="section-box" id="designSummary" style="margin-bottom: 2rem; background: #f9f9f9;">
-                    <div class="section-label">Your Design</div>
-                    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem;">
-                        <div id="summaryMaterialPreview" style="width: 80px; height: 50px; border-radius: 8px; background: #0a0a0a;"></div>
-                        <div>
-                            <div id="summaryName" style="font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #1a1a1a;">Your Name</div>
-                            <div id="summaryMaterial" style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: #6b6b6b; margin-top: 0.25rem;">Black Metal Matte</div>
+                <!-- Unified Configuration Section -->
+                <div class="section-box" style="margin-top: 5px; padding: 1.25rem;">
+                    <!-- 1. Card Type / Quantity -->
+                    <div class="config-subset" style="margin-top: 0; margin-bottom: 1rem;">
+                        <div class="config-label" style="font-size: 0.9rem;">
+                            <span class="config-id" style="width: 18px; height: 18px; font-size: 0.6rem;">1</span> Card Type
                         </div>
-                    </div>
-                    <a href="index.html" style="display: inline-block; margin-top: 1rem; font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #c9a962; text-decoration: underline;">Edit Design →</a>
-                </div>
-
-                <!-- Card Type / Quantity -->
-                <div class="section-box">
-                    <div class="section-label">Card Type</div>
-                    <div class="section-sublabel">Select quantity:</div>
-
-                    <div class="quantity-options">
-                        <div class="quantity-option selected" onclick="selectQuantity(10, 590, this)">
-                            <div class="quantity-radio"></div>
-                            <div class="quantity-label">10 Cards</div>
-                            <div class="quantity-price">$590</div>
-                        </div>
-                        <div class="quantity-option" onclick="selectQuantity(25, 1225, this)">
-                            <div class="popular-badge">Popular</div>
-                            <div class="quantity-radio"></div>
-                            <div class="quantity-label">25 Cards</div>
-                            <div class="quantity-price">$1,225</div>
-                        </div>
-                        <div class="quantity-option" onclick="selectQuantity(50, 2250, this)">
-                            <div class="quantity-radio"></div>
-                            <div class="quantity-label">50 Cards</div>
-                            <div class="quantity-price">$2,250</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Add-ons -->
-                <div class="section-box">
-                    <div class="section-label">Add-Ons</div>
-                    <div class="section-sublabel">Enhance your card:</div>
-
-                    <div class="addon-item">
-                        <div class="addon-info">
-                            <div class="addon-radio included"></div>
-                                <h4>NFC Chip</h4>
-                                <p>Tap to share contact info</p>
+                        <div class="section-sublabel" style="margin-bottom: 0.75rem; font-size: 0.7rem;">Select quantity:</div>
+                        <div class="quantity-options" style="gap: 0.5rem;">
+                            <div class="quantity-option selected" style="padding: 0.6rem 0.75rem;" onclick="selectQuantity(10, 590, this)">
+                                <div class="quantity-label" style="font-size: 0.85rem;">10 Cards</div>
+                                <div class="quantity-price" style="font-size: 0.75rem;">$590</div>
+                            </div>
+                            <div class="quantity-option" style="padding: 0.6rem 0.75rem;" onclick="selectQuantity(25, 1225, this)">
+                                <div class="popular-badge" style="font-size: 0.55rem; padding: 2px 6px;">Popular</div>
+                                <div class="quantity-label" style="font-size: 0.85rem;">25 Cards</div>
+                                <div class="quantity-price" style="font-size: 0.75rem;">$1,225</div>
+                            </div>
+                            <div class="quantity-option" style="padding: 0.6rem 0.75rem;" onclick="selectQuantity(50, 2250, this)">
+                                <div class="quantity-label" style="font-size: 0.85rem;">50 Cards</div>
+                                <div class="quantity-price" style="font-size: 0.75rem;">$2,250</div>
                             </div>
                         </div>
-                        <div class="addon-price included">Included</div>
                     </div>
 
-                    <div class="addon-item">
-                        <div class="addon-info">
-                            <div class="toggle-switch" id="qrToggle" onclick="toggleAddon('qr')"></div>
-                            <div class="addon-text">
-                                <h4>QR Code</h4>
-                                <p>Digital link</p>
-                            </div>
+                    <div class="config-divider"></div>
+
+                    <!-- 2. Card Material & Finish -->
+                    <div class="config-subset">
+                        <div class="config-label">
+                            <span class="config-id">2</span> Card Material &amp; Finish
                         </div>
-                        <div class="addon-price" id="qrPrice">+$45</div>
+                        <!-- Locked state banner -->
+                        <div class="material-locked-banner">
+                            <span class="lock-icon">🔒</span>
+                            Material locked from your design selection. <a href="materials.html" style="color:#c9a962;text-decoration:underline;margin-left:4px;">Change →</a>
+                        </div>
+                        <div class="order-materials-grid" id="orderMaterialsGrid">
+                            <!-- Dynamically populated by renderMaterialThumbnails() -->
+                        </div>
                     </div>
 
-                    <div class="addon-item">
-                        <div class="addon-info">
-                            <div class="toggle-switch" id="laserToggle" onclick="toggleAddon('laser')"></div>
-                            <div class="addon-text">
-                                <h4>Laser Engraving</h4>
-                                <p>Custom text or logo</p>
+                    <div class="config-divider"></div>
+
+                    <!-- 3. Add-ons -->
+                    <div class="config-subset">
+                        <div class="config-label">
+                            <span class="config-id">3</span> Add-Ons
+                        </div>
+                        <div class="section-sublabel">Enhance your card:</div>
+                        <div class="addons-grid-v2">
+                            <!-- Row 1: NFC -->
+                            <div class="addon-row-v2 first">
+                                <div class="addon-cell-v2">
+                                    <div class="addon-item-v2">
+                                        <div class="addon-radio-v2 included"></div>
+                                        <div class="addon-text-group-v2">
+                                            <div class="addon-title-v2">NFC Chip</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="addon-cell-v2 controls-cell-v2">
+                                    <span class="addon-status-text active">Included</span>
+                                    <div class="toggle-switch active"></div>
+                                </div>
+                            </div>
+
+                            <!-- Row 2: QR & Laser -->
+                            <div class="addon-row-v2 second">
+                                <div class="addon-cell-v2 split">
+                                    <div class="addon-item-v2" onclick="toggleAddon('qr')">
+                                        <div class="addon-radio-v2" id="qrRadio"></div>
+                                        <div class="addon-text-group-v2">
+                                            <div class="addon-title-v2">QR Code</div>
+                                            <div class="addon-desc-v2">Digital link</div>
+                                        </div>
+                                        <div class="addon-price-tag-v2">+$45</div>
+                                    </div>
+                                </div>
+                                <div class="addon-cell-v2 split border-left">
+                                    <div class="addon-item-v2" onclick="toggleAddon('laser')">
+                                        <div class="addon-radio-v2" id="laserRadio"></div>
+                                        <div class="addon-text-group-v2">
+                                            <div class="addon-title-v2">Laser Engraving</div>
+                                            <div class="addon-desc-v2">Custom text or logo</div>
+                                        </div>
+                                        <div class="addon-price-tag-v2">+$80</div>
+                                    </div>
+                                </div>
+                                <div class="addon-cell-v2 controls-cell-v2 vertical-stack">
+                                    <div class="toggle-switch" id="qrToggle" onclick="toggleAddon('qr')"></div>
+                                    <div class="toggle-switch" id="laserToggle" onclick="toggleAddon('laser')"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="addon-price" id="laserPrice">+$80</div>
                     </div>
                 </div>
+
+
             </div>
 
-            <!-- Right Side - Preview & Summary -->
+            <!-- Right Side - Preview -->
            <div class="order-preview-section">
                 
-                <div class="final-card-container" style="perspective: 1000px;">
-                    <div class="final-card" id="finalCard" style="transform-style: preserve-3d; transition: transform 0.2s; cursor: pointer;" onclick="flipCard()" title="Click to flip">
-                        
-                        <div id="flipInner" style="position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1); transform-style: preserve-3d;">
-                            
-                            <div style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden;">
-                                <canvas id="finalFrontCanvas" style="width: 100%; height: 100%; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);"></canvas>
+                 <div class="final-card-container" id="orderCardTrigger">
+                    <div class="card-float-wrapper">
+                        <div class="card-3d-wrapper" id="orderCardWrapper" onclick="flipOrderCard()">
+                            <div class="card-3d-inner" id="orderCardInner">
+                            <!-- FRONT -->
+                            <div class="card-face-3d front">
+                                <canvas id="finalFrontCanvas" style="width: 100%; height: 100%;"></canvas>
+                                <div class="card-shine"></div>
                             </div>
-                            
-                            <div style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; transform: rotateY(180deg);">
-                                <canvas id="finalBackCanvas" style="width: 100%; height: 100%; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);"></canvas>
+                            <!-- BACK -->
+                            <div class="card-face-3d back">
+                                <canvas id="finalBackCanvas" style="width: 100%; height: 100%;"></canvas>
+                                <div class="card-shine"></div>
                             </div>
-
                         </div>
-
                     </div>
-                    <div style="text-align: center; margin-top: 1rem; font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #888;">
-                        ⟳ Click card to flip
-                    </div>
+                 </div>
+                 <div class="flip-hint">⟳ Click card to flip · Move to tilt</div>
+                 <div id="orderSummaryDesktopAnchor"></div>
+             </div>
+             </div>
+             <div id="orderSummaryMobileAnchor" ></div>
+             <div class="order-summary-box" id="orderSummaryBox"  >
+                 <div class="summary-title">Order Summary</div>
+                <div class="summary-line">
+                    <span class="summary-label" id="summaryQty">10x Black Metal Cards</span>
+                    <span class="summary-value" id="summaryBasePrice">$590</span>
                 </div>
-
-                <div class="order-summary-box">
-                    <div class="summary-title">Order Summary</div>
-                    <div class="summary-line">
-                        <span class="summary-label" id="summaryQty">10x Black Metal Cards</span>
-                        <span class="summary-value" id="summaryBasePrice">$590</span>
+                <div class="summary-line" id="qrSummaryLine" style="display: none;">
+                    <span class="summary-label">QR Code</span>
+                    <span class="summary-value">+$45</span>
+                </div>
+                <div class="summary-line" id="laserSummaryLine" style="display: none;">
+                    <span class="summary-label">Laser Engraving</span>
+                    <span class="summary-value">+$80</span>
+                </div>
+                <div class="summary-line total">
+                    <span class="summary-label">Total</span>
+                    <span class="summary-value" id="summaryTotal">$590</span>
+                </div>
+                <div class="tax-note">All taxes included</div>
+                <button class="checkout-btn lux-primary-btn" id="checkoutBtnOrder" onclick="proceedToCheckout()">
+                    <div class="lux-sheen"></div>
+                    <span class="lux-text">Proceed to Checkout</span>
+                    <span class="lux-arrow">→</span>
+                </button>
+                <div class="security-badges" style="margin-top: 2rem; border-top: 1px solid #f0f0f0; padding-top: 1rem;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem; opacity: 0.7;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Visa_2021.svg/1200px-Visa_2021.svg.png" style="height: 12px;" alt="Visa">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" style="height: 18px;" alt="Mastercard">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/American_Express_logo.svg/1200px-American_Express_logo.svg.png" style="height: 18px;" alt="Amex">
                     </div>
-                    <div class="summary-line" id="qrSummaryLine" style="display: none;">
-                        <span class="summary-label">QR Code</span>
-                        <span class="summary-value">+$45</span>
-                    </div>
-                    <div class="summary-line" id="laserSummaryLine" style="display: none;">
-                        <span class="summary-label">Laser Engraving</span>
-                        <span class="summary-value">+$80</span>
-                    </div>
-                    <div class="summary-line total">
-                        <span class="summary-label">Total</span>
-                        <span class="summary-value" id="summaryTotal">$590</span>
-                    </div>
-                    <div class="tax-note">All taxes included</div>
-                    <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
-                    <div class="security-badges">
-                        <div class="security-badge"><span>🔒</span><span>Secure Checkout</span></div>
-                        <div class="security-badge"><span style="font-size: 1.2rem;">💳</span><span>Encrypted Payment</span></div>
-                        <div class="security-badge"><span>✓</span><span>30 Day Guarantee</span></div>
+                    <div style="display: flex; justify-content: center; gap: 1.5rem; font-size: 0.75rem; color: #888;">
+                        <div class="security-badge"><span>🔒</span> Secure Checkout</div>
+                        <div class="security-badge"><span>✓</span> 30 Day Guarantee</div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    
+    <!-- Luxury Footer -->
+    <footer class="lux-footer">
+    <div class="footer-inner">
+
+        <!-- Logo Image -->
+        <div class="footer-logo">
+            <img src="image/Untitled designs (16).png" alt="Cardel Logo">
+        </div>
+
+        <nav class="footer-nav">
+            <a href="#hero">DESIGN</a>
+            <a href="#materials">MATERIALS</a>
+            <a href="#atelier">ATELIER</a>
+            <a href="#order">ORDER</a>
+            <a href="#help">HELP</a>
+        </nav>
+
+        <div class="footer-social">
+            <a href="#" aria-label="Instagram">Instagram</a>
+            <a href="#" aria-label="Facebook">Facebook</a>
+            <a href="#" aria-label="Pinterest">Pinterest</a>
+        </div>
+
+    </div>
+</footer>
+
     <div class="toast" id="toast"></div>
 
-    <script src="shared.js"></script>
+    <script src="shared.js?v=4.0"></script>
   <script>
-        let isFlipped = false;
+        let orderFlipped = false;
+
+        function flipOrderCard() {
+            orderFlipped = !orderFlipped;
+            const wrapper = document.getElementById('orderCardWrapper');
+            if (wrapper) wrapper.classList.toggle('is-flipped', orderFlipped);
+        }
+
+        function setupOrderTilt() {
+            const trigger = document.getElementById('orderCardTrigger');
+            const inner = document.getElementById('orderCardInner');
+            if (!trigger || !inner) return;
+
+            let cx = 0, cy = 0, tx = 0, ty = 0, hov = false, raf = null;
+
+            trigger.addEventListener('mouseenter', () => {
+                hov = true;
+                inner.parentElement.classList.add('tilted');
+                if (!raf) loop();
+            });
+
+            trigger.addEventListener('mousemove', e => {
+                if (!hov) return;
+                const r = trigger.getBoundingClientRect();
+                const x = (e.clientX - r.left) / r.width;
+                const y = (e.clientY - r.top) / r.height;
+                
+                tx = (y - 0.5) * -15; // pitch
+                ty = (x - 0.5) * (orderFlipped ? -15 : 15);  // yaw inverted if flipped
+                
+                // Update shine variables
+                inner.parentElement.style.setProperty('--shine-x', (x * 100) + '%');
+                inner.parentElement.style.setProperty('--shine-y', (y * 100) + '%');
+            });
+
+            trigger.addEventListener('mouseleave', () => {
+                hov = false;
+                tx = 0; ty = 0;
+                inner.parentElement.classList.remove('tilted');
+            });
+
+            function loop() {
+                if (!hov && Math.abs(tx - cx) < 0.01 && Math.abs(ty - cy) < 0.01) {
+                    raf = null;
+                    inner.style.transform = `rotateX(0) rotateY(0)`;
+                    return;
+                }
+                cx += (tx - cx) * 0.1;
+                cy += (ty - cy) * 0.1;
+                
+                // Just apply tilt, parent handles flip
+                inner.style.transform = `rotateX(${cx}deg) rotateY(${cy}deg)`;
+                
+                raf = requestAnimationFrame(loop);
+            }
+        }
+
+        function placeOrderSummaryByViewport() {
+            const summary = document.getElementById('orderSummaryBox');
+            const desktopAnchor = document.getElementById('orderSummaryDesktopAnchor');
+            const mobileAnchor = document.getElementById('orderSummaryMobileAnchor');
+            if (!summary || !desktopAnchor || !mobileAnchor) return;
+
+            if (window.innerWidth > 900) {
+                // Desktop: place summary directly below card
+                if (summary.previousElementSibling !== desktopAnchor) {
+                    desktopAnchor.insertAdjacentElement('afterend', summary);
+                }
+                summary.style.width = '100%';
+                summary.style.maxWidth = '380px';
+                summary.style.margin = '1.2rem auto 0';
+            } else {
+                if (summary.previousElementSibling !== mobileAnchor) {
+                    mobileAnchor.insertAdjacentElement('afterend', summary);
+                }
+                summary.style.width = '';
+                summary.style.maxWidth = '';
+                summary.style.margin = '';
+            }
+        }
 
         // Order page specific initialization
         window.addEventListener('load', () => {
             if (typeof loadFromStorage === 'function') loadFromStorage();
+            setupOrderTilt();
+            placeOrderSummaryByViewport();
             
-            updateDesignSummary();
-            updateOrderSummary();
-            renderBothSides();
+            // Force isZoomed to false to ensure card text is rendered on order page
+            state.isZoomed = false;
 
-            // Intercept the toggleAddon function from shared.js to update the canvases live!
+            // Wait for fonts to be ready to ensure canvas renders text correctly
+            if (document.fonts) {
+                document.fonts.ready.then(() => {
+                    initOrderPage();
+                });
+            } else {
+                setTimeout(initOrderPage, 100);
+            }
+
+            // Intercept toggleAddon to live-update canvases
             const originalToggleAddon = window.toggleAddon;
             if (typeof originalToggleAddon === 'function') {
                 window.toggleAddon = function(addon) {
-                    originalToggleAddon(addon); // Run the original math
-                    renderBothSides(); // Redraw the canvases
+                    originalToggleAddon(addon);
+                    renderBothSides();
                     
-                    // If they just turned ON the QR code or Laser, automatically flip the card to show them!
-                    if ((addon === 'qr' || addon === 'laser') && state.orderConfig.addons[addon] && !isFlipped) {
-                        flipCard();
+                    // Update UI elements to match state
+                    const qrRadio = document.getElementById('qrRadio');
+                    const laserRadio = document.getElementById('laserRadio');
+                    const qrToggle = document.getElementById('qrToggle');
+                    const laserToggle = document.getElementById('laserToggle');
+                    
+                    if (qrRadio) qrRadio.className = 'addon-radio-v2' + (state.orderConfig.addons.qr ? ' checked' : '');
+                    if (laserRadio) laserRadio.className = 'addon-radio-v2' + (state.orderConfig.addons.laser ? ' checked' : '');
+                    if (qrToggle) qrToggle.classList.toggle('active', !!state.orderConfig.addons.qr);
+                    if (laserToggle) laserToggle.classList.toggle('active', !!state.orderConfig.addons.laser);
+                    
+                    if ((addon === 'qr' || addon === 'laser') && state.orderConfig.addons[addon] && !orderFlipped) {
+                        flipOrderCard();
                     }
+                    updateOrderSummary();
                 };
             }
         });
 
-        function updateDesignSummary() {
-            const mat = getCurrentMaterial();
-            document.getElementById('summaryName').textContent = state.cardData.name || 'Your Name';
-            document.getElementById('summaryMaterial').textContent = mat.name;
+        let orderSummaryResizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(orderSummaryResizeTimer);
+            orderSummaryResizeTimer = setTimeout(placeOrderSummaryByViewport, 120);
+        });
+
+        function initOrderPage() {
+            // Restore quantity selection UI from saved state
+            const savedQty = state.orderConfig.quantity || 10;
+            document.querySelectorAll('.quantity-option').forEach(opt => {
+                const optQty = parseInt(opt.querySelector('.quantity-label')?.textContent);
+                opt.classList.toggle('selected', optQty === savedQty);
+            });
+
+            updateOrderSummary();
+            renderBothSides();
+            renderMaterialThumbnails();
+            syncOrderMaterialSelection();
             
-            let bgStyle = mat.color;
-            if (mat.id === 'carbon-fiber') bgStyle = '#1a1a1a';
-            if (mat.id === 'forged-carbon') bgStyle = '#2a2a2a';
-            if (mat.id === 'meteorite') bgStyle = '#4a4a4a';
-            if (mat.id === 'mother-pearl') bgStyle = 'linear-gradient(135deg, #fff, #f0f0f0, #fff)';
-            document.getElementById('summaryMaterialPreview').style.background = bgStyle;
+            // Update addon radio states on load
+            const qrRadio = document.getElementById('qrRadio');
+            const laserRadio = document.getElementById('laserRadio');
+            const qrToggle = document.getElementById('qrToggle');
+            const laserToggle = document.getElementById('laserToggle');
+            
+            if (qrRadio) qrRadio.className = 'addon-radio-v2' + (state.orderConfig.addons.qr ? ' checked' : '');
+            if (laserRadio) laserRadio.className = 'addon-radio-v2' + (state.orderConfig.addons.laser ? ' checked' : '');
+            if (qrToggle) qrToggle.classList.toggle('active', !!state.orderConfig.addons.qr);
+            if (laserToggle) laserToggle.classList.toggle('active', !!state.orderConfig.addons.laser);
+
+            // Re-render after a short delay to ensure fonts and images are fully loaded
+            setTimeout(() => {
+                renderBothSides();
+                renderMaterialThumbnails();
+            }, 300);
+        }
+
+        // Render ONLY the selected material thumbnail on the order page
+        function renderMaterialThumbnails() {
+            if (typeof drawCard !== 'function') return;
+            const grid = document.getElementById('orderMaterialsGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const selectedId = state.cardData.material || 'silver';
+            const mat = getCurrentMaterial(); // Helper already exists below to find the current active material
+
+            if (mat) {
+                const canvasId = 'omat-canvas-' + mat.id;
+                const price = mat.price > 0 ? '+$' + mat.price : 'Included';
+
+                const card = document.createElement('div');
+                card.className = 'order-mat-card selected';
+                card.id = 'omat-' + mat.id;
+
+                card.innerHTML = `
+                    <div class="order-mat-preview">
+                        <canvas id="${canvasId}" class="order-mat-canvas"></canvas>
+                    </div>
+                    <div class="order-mat-info-row">
+                        <div>
+                            <div class="order-mat-label">${mat.name}</div>
+                            <div class="order-mat-sublabel">${mat.finish}</div>
+                        </div>
+                        <div class="order-mat-price">${price}</div>
+                    </div>`;
+
+                grid.appendChild(card);
+
+                // Render the canvas thumbnail at real display size
+                setTimeout(() => {
+                    const size = (typeof getCanvasRenderSize === 'function')
+                        ? getCanvasRenderSize(canvasId, 220, 138)
+                        : { w: 220, h: 138 };
+                    drawCard(canvasId, 'front', size.w, size.h);
+                }, 30);
+            }
+        }
+
+        // Sync selected tile (highlight only) — locking is done in renderMaterialThumbnails
+        function syncOrderMaterialSelection() {
+            const current = state.cardData.material || 'silver';
+            document.querySelectorAll('.order-mat-card').forEach(el => {
+                const id = el.id.replace('omat-', '');
+                el.classList.toggle('selected', id === current);
+                el.classList.toggle('locked', id !== current);
+            });
+        }
+
+        // selectOrderMaterial is intentionally disabled on order page (tiles are locked)
+        // Kept for backward compatibility but does nothing
+        function selectOrderMaterial(matId, el) {
+            // no-op — selection is locked on this page
+        }
+
+        function selectQuantity(qty, price, el) {
+            state.orderConfig.quantity = qty;
+            state.orderConfig.basePrice = price;
+            saveToStorage();
+            
+            document.querySelectorAll('.quantity-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            updateOrderSummary();
+        }
+
+        function updateOrderSummary() {
+            const mat = getCurrentMaterial();
+            const subtotal = state.orderConfig.basePrice + (mat.price || 0);
+
+            let addonTotal = 0;
+            if (state.orderConfig.addons.qr) addonTotal += 45;
+            if (state.orderConfig.addons.laser) addonTotal += 80;
+
+            const total = subtotal + addonTotal;
+
+            const qty = state.orderConfig.quantity;
+            document.getElementById('summaryQty').textContent = `${qty}x ${mat.name} Cards`;
+            document.getElementById('summaryBasePrice').textContent = `$${subtotal}`;
+
+            const qrLine = document.getElementById('qrSummaryLine');
+            if (qrLine) qrLine.style.display = state.orderConfig.addons.qr ? 'flex' : 'none';
+
+            const laserLine = document.getElementById('laserSummaryLine');
+            if (laserLine) laserLine.style.display = state.orderConfig.addons.laser ? 'flex' : 'none';
+
+            document.getElementById('summaryTotal').textContent = `$${total}`;
+        }
+
+        function getCurrentMaterial() {
+            const materialId = state.cardData.material || 'silver';
+            for (const category in state.materials) {
+                const found = state.materials[category].find(m => m.id === materialId);
+                if (found) return found;
+            }
+            return state.materials.metal[0];
+        }
+
+        function updateDesignSummary() {
+            // This now only impacts the main preview card and thumbnails
+            // as we removed the Design Summary box from the left column.
+            renderBothSides();
         }
 
         function renderBothSides() {
             if (typeof drawCard !== 'function') return;
 
+            const frontSize = (typeof getCanvasRenderSize === 'function')
+                ? getCanvasRenderSize('finalFrontCanvas', 600, 378)
+                : { w: 600, h: 378 };
+            const backSize = (typeof getCanvasRenderSize === 'function')
+                ? getCanvasRenderSize('finalBackCanvas', 600, 378)
+                : { w: 600, h: 378 };
+
             // Draw Front
-            drawCard('finalFrontCanvas', 'front', 600, 378);
+            drawCard('finalFrontCanvas', 'front', frontSize.w, frontSize.h);
             
             // Draw Back (QR Code is automatically handled inside shared.js drawHDRBackSide)
-            drawCard('finalBackCanvas', 'back', 600, 378);
+            drawCard('finalBackCanvas', 'back', backSize.w, backSize.h);
 
             // Explicitly draw the Laser Engraving on the back if enabled
             if (state.orderConfig.addons.laser) {
@@ -258,6 +698,8 @@
             ctx.shadowOffsetY = 1;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
+            
+            // QR Code is now automatically handled by drawCard -> drawHDRBackSide
             
            
             // Generate a fake serial number based on their name length for realism
@@ -302,5 +744,111 @@
             showToast('Redirecting to secure checkout...');
         }
     </script>
+    <!-- Lenis Smoothing -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const lenis = new Lenis({
+                lerp: 0.055,
+                duration: 1.3,
+                easing: function(t){ return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
+                orientation: 'vertical',
+                gestureOrientation: 'vertical',
+                smoothWheel: true,
+                wheelMultiplier: 0.72,
+                smoothTouch: false,
+            });
+
+            window.lenis = lenis;
+            document.documentElement.classList.add('lenis');
+
+            lenis.on('scroll', () => {
+                if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.update();
+            });
+
+            if (typeof gsap !== 'undefined') {
+                gsap.ticker.add((time) => {
+                    lenis.raf(time * 1000);
+                });
+                gsap.ticker.lagSmoothing(0);
+            } else {
+                function raf(time) {
+                    lenis.raf(time);
+                    requestAnimationFrame(raf);
+                }
+                requestAnimationFrame(raf);
+            }
+        });
+    </script>
+
+  <script>
+  // ===== LUXURY BUTTON INTERACTION ENGINE — order page =====
+  ;(function initLuxButtons() {
+    'use strict'
+    function setup() {
+      if (typeof gsap === 'undefined') { requestAnimationFrame(setup); return }
+      document.querySelectorAll('.lux-primary-btn').forEach(function(btn) {
+        const sheen = btn.querySelector('.lux-sheen')
+        const arrow = btn.querySelector('.lux-arrow')
+        const MAGNETIC_STRENGTH = 0.38
+        const MAGNETIC_RADIUS = 90
+        function onMouseMove(e) {
+          const rect = btn.getBoundingClientRect()
+          const dx = e.clientX - (rect.left + rect.width / 2)
+          const dy = e.clientY - (rect.top + rect.height / 2)
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < MAGNETIC_RADIUS) {
+            const f = (1 - dist / MAGNETIC_RADIUS) * MAGNETIC_STRENGTH
+            gsap.to(btn, { x: dx * f, y: dy * f, duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
+          } else {
+            gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: 'power2.out', overwrite: 'auto' })
+          }
+        }
+        document.addEventListener('mousemove', onMouseMove)
+        btn.addEventListener('mouseenter', function(e) {
+          if (sheen) {
+            const rect = btn.getBoundingClientRect()
+            const entryX = (e.clientX - rect.left) / rect.width
+            gsap.set(sheen, { left: (entryX * 100 - 80) + '%', opacity: 1 })
+            gsap.to(sheen, {
+              left: '130%', duration: 0.72, ease: 'power2.inOut',
+              onComplete: function() { gsap.set(sheen, { left: '-130%', opacity: 0 }) }
+            })
+          }
+          if (arrow) gsap.to(arrow, { x: 4, duration: 0.4, ease: 'power2.inOut' })
+        })
+        btn.addEventListener('mouseleave', function() {
+          if (arrow) gsap.to(arrow, { x: 0, duration: 0.4, ease: 'power2.inOut' })
+          gsap.to(btn, { x: 0, y: 0, scale: 1, duration: 0.6, ease: 'elastic.out(1, 0.5)', overwrite: 'auto' })
+        })
+        btn.addEventListener('mousedown', function() {
+          gsap.to(btn, { scale: 0.96, duration: 0.12, ease: 'power2.inOut', overwrite: 'auto' })
+        })
+        btn.addEventListener('mouseup', function() {
+          gsap.to(btn, { scale: 1, duration: 0.7, ease: 'elastic.out(1.2, 0.45)', overwrite: 'auto' })
+        })
+      })
+    }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', setup) }
+    else { setup() }
+  })()
+  </script>
+  <script>
+    function toggleSiteMobileMenu() {
+      const open = !document.body.classList.contains('site-mobile-menu-open')
+      const backdrop = document.querySelector('.site-mobile-menu-backdrop')
+      const drawer = document.querySelector('.site-mobile-menu-drawer')
+      if (backdrop) backdrop.hidden = !open
+      if (drawer) drawer.hidden = !open
+      document.body.classList.toggle('site-mobile-menu-open', open)
+    }
+    function closeSiteMobileMenu() {
+      const backdrop = document.querySelector('.site-mobile-menu-backdrop')
+      const drawer = document.querySelector('.site-mobile-menu-drawer')
+      if (backdrop) backdrop.hidden = true
+      if (drawer) drawer.hidden = true
+      document.body.classList.remove('site-mobile-menu-open')
+    }
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSiteMobileMenu() })
+  </script>
 </body>
 </html>

@@ -11,14 +11,28 @@
    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <base target="_blank">
+    <link rel="stylesheet" href="style.css?v=3.3">
+    <base target="_self">
+    <link rel="shortcut icon" href="image/Untitled design (18).png" type="image/x-icon">
 </head>
 
 <body>
-    <canvas id="threeOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 100;"></canvas>
+      <canvas id="threeOverlay"></canvas>
+    <!-- Loading Screen -->
+  <!-- <div id="loader">
+    <div class="loader-logo">
+        <video autoplay muted loop playsinline>
+            <source src="image/Untitled design (8) - Trim.mp4" type="video/mp4">
+        </video>
+    </div> -->
+
+    <!-- <div class="loader-bar">
+        <div class="loader-progress"></div>
+    </div> -->
+</div>
 
     <!-- Zoom Overlay -->
     <div class="zoom-overlay" id="zoomOverlay"></div>
@@ -27,7 +41,7 @@
 
     <!-- Background Video -->
     <video autoplay muted loop playsinline>
-        <source src="image/Untitled design (7).mp4" type="video/mp4">
+        <source src="image/Untitled design (10).mp4" type="video/mp4">
     </video>
 
     <!-- Navigation -->
@@ -36,15 +50,17 @@
             <div class="nav-left"></div>
 
             <div class="nav-center">
+                <a href="index.html" target="_self">
                <div class="nav-logo">
-    <video autoplay muted loop playsinline>
-        <source src="image/ecea5294010946da9c85d9af2cae86da.webm" type="video/mp4">
-    </video>
-</div>
+ <img src="image/Untitled design (16).png" alt="">
+</div></a>
             </div>
 
             <div class="nav-right">
-                <a href="order.html" class="nav-begin" onclick="saveToStorage()">Order →</a>
+                <a href="materials.html" class="nav-begin" onclick="saveToStorage()">Next →</a>
+                <button type="button" class="site-mobile-menu-toggle" aria-label="Open menu" onclick="toggleSiteMobileMenu()">
+                    <span></span><span></span><span></span>
+                </button>
             </div>
         </div>
 
@@ -54,14 +70,20 @@
 
         <div class="nav-links-wrapper">
             <ul class="nav-links">
-                <li><a href="#">Design</a></li>
-                <li><a href="#">Materials</a></li>
-                <li><a href="#">Atelier</a></li>
-                <li><a href="order.html" onclick="saveToStorage()">Order</a></li>
-                <li><a href="#">Help</a></li>
+                <li><a href="#hero" data-target="hero">Design</a></li>
+                <li><a href="materials.html" target="_self">Materials</a></li>
+                <li><a href="atelier.html" target="_self">Atelier</a></li>
+                <li><a href="materials.html" target="_self" onclick="saveToStorage()">Next</a></li>
             </ul>
         </div>
     </nav>
+    <div class="site-mobile-menu-backdrop" onclick="closeSiteMobileMenu()" hidden></div>
+    <div class="site-mobile-menu-drawer" hidden>
+        <a href="#hero" data-target="hero" onclick="closeSiteMobileMenu()">Design</a>
+        <a href="materials.html" target="_self" onclick="closeSiteMobileMenu()">Materials</a>
+        <a href="atelier.html" target="_self" onclick="closeSiteMobileMenu()">Atelier</a>
+        <a href="materials.html" target="_self" onclick="saveToStorage(); closeSiteMobileMenu()">Next</a>
+    </div>
 
     <!-- Hero Section -->
     <section id="hero">
@@ -72,15 +94,14 @@
                 Tailored cards for those who understand detail.
             </p>
 
-            <!-- Checklist with real inputs -->
-            <div class="checklist-container golden-glow">
-                <div class="checklist-title">Personalise Your Card</div>
+            <!-- Complete Your Identity -->
+            <div class="checklist-container guidance-glow">
+                <div class="checklist-title">Complete Your Identity</div>
 
                 <div class="checklist-item" id="check-item-1">
                     <div class="check-input-wrap">
-                        <input type="text" class="check-field" id="sidebarName" placeholder=" " autocomplete="off"
+                        <input type="text" class="check-field" id="sidebarName" placeholder="Full Name" autocomplete="off"
                                oninput="syncFromSidebar('name', this.value)">
-                        <label class="check-label">Name</label>
                     </div>
                     <div class="check-circle">
                         <span class="check-icon">✓</span>
@@ -89,9 +110,8 @@
 
                 <div class="checklist-item" id="check-item-2">
                     <div class="check-input-wrap">
-                        <input type="text" class="check-field" id="sidebarTitle" placeholder=" " autocomplete="off"
+                        <input type="text" class="check-field" id="sidebarTitle" placeholder="Job Title" autocomplete="off"
                                oninput="syncFromSidebar('title', this.value)">
-                        <label class="check-label">Job Title</label>
                     </div>
                     <div class="check-circle">
                         <span class="check-icon">✓</span>
@@ -100,9 +120,8 @@
 
                 <div class="checklist-item" id="check-item-3">
                     <div class="check-input-wrap">
-                        <input type="tel" class="check-field" id="sidebarNumber" placeholder=" " autocomplete="off"
+                        <input type="tel" class="check-field" id="sidebarNumber" placeholder="Phone Number" autocomplete="off"
                                oninput="syncFromSidebar('number', this.value)">
-                        <label class="check-label">Phone</label>
                     </div>
                     <div class="check-circle">
                         <span class="check-icon">✓</span>
@@ -111,9 +130,19 @@
 
                 <div class="checklist-item" id="check-item-4">
                     <div class="check-input-wrap">
-                        <input type="email" class="check-field" id="sidebarEmail" placeholder=" " autocomplete="off"
+                        <input type="email" class="check-field" id="sidebarEmail" placeholder="Email Address" autocomplete="off"
                                oninput="syncFromSidebar('email', this.value)">
-                        <label class="check-label">Gmail</label>
+                    </div>
+                    <div class="check-circle">
+                        <span class="check-icon">✓</span>
+                    </div>
+                </div>
+
+                <!-- Website / Custom Field -->
+                <div class="checklist-item" id="check-item-5">
+                    <div class="check-input-wrap">
+                        <input type="text" class="check-field" id="sidebarWebsite" placeholder="Website / Custom" autocomplete="off"
+                               oninput="syncFromSidebar('website', this.value)">
                     </div>
                     <div class="check-circle">
                         <span class="check-icon">✓</span>
@@ -121,8 +150,10 @@
                 </div>
             </div>
 
-         <button class="next-btn" id="nextBtn" onclick="continueToMaterials()">
-    Continue
+         <button class="next-btn lux-primary-btn" id="nextBtn" onclick="console.log('Validating identity details...'); continueToMaterials()">
+    <div class="lux-sheen"></div>
+    <span class="lux-text">Continue</span>
+    <span class="lux-arrow">→</span>
 </button>
 
             <p class="hero-help" style="margin-top: 1.8rem; font-family: 'Playfair Display', serif; font-size: 0.95rem; color: #6b6b6b; display: flex; align-items: center; gap: 6px; cursor: pointer;">
@@ -142,12 +173,13 @@
             <!-- 3D Card with Entrance Wrapper -->
             <div class="card-entrance-wrapper" id="cardEntranceWrapper">
                 <div class="card-container-3d" id="cardContainer3d" onclick="toggleCardZoom(event)">
-                    <div class="hand-indicator">👉</div>
                     <div class="card-3d-wrapper" id="card3dWrapper">
                         <div class="card-3d-inner" id="card3dInner">
                             <div class="card-face-3d front golden-glow" id="cardFrontFace">
                                 <canvas id="heroFrontCanvas" class="card-canvas-3d"></canvas>
-                                <div class="card-shine"></div>
+                           <div class="card-shine"></div>
+
+
 
                                 <!-- Direct Input Overlay -->
                                 <div class="card-input-overlay" id="cardInputOverlay" onclick="event.stopPropagation()">
@@ -155,6 +187,7 @@
                                     <input type="text" class="card-input-field input-title" id="inputTitle" placeholder="Creative Director" value="" autocomplete="off">
                                     <input type="text" class="card-input-field input-number" id="inputNumber" placeholder="+1 (555) 000-0000" value="" autocomplete="off">
                                     <input type="email" class="card-input-field input-email" id="inputEmail" placeholder="hello@cardel.com" value="" autocomplete="off">
+                                    <input type="text" class="card-input-field input-website" id="inputWebsite" placeholder="www.cardel.com" value="" autocomplete="off">
                                 </div>
                             </div>
                             <div class="card-face-3d back golden-glow">
@@ -168,8 +201,8 @@
 
             <!-- Materials Section - BELOW CARD -->
             <div id="materials">
-                <!-- Card click guide -->
-
+                    <!-- Ambient Glow (Light from back) -->
+                    <div class="card-ambient-glow"></div>
 
                 <div class="category-tabs">
                     <div class="category-tab active" onclick="filterMaterials('metal')">Metal</div>
@@ -178,10 +211,11 @@
                     <div class="category-tab" onclick="filterMaterials('limited')">Limited</div>
                 </div>
 
-                <div class="materials-grid" id="materialsGrid"></div>
+                <div class="materials-grid" id="materialsGrid" style="grid-template-columns: repeat(4, 1fr);"></div>
             </div>
         </div>
     </section>
+
 
 </div>
     <!-- 4 Steps Section -->
@@ -306,7 +340,7 @@
 
         <div class="about-card-float-wrapper reveal-item" id="cardFloatWrap" style="display: flex; justify-content: center; align-items: center; margin: 8rem 0 10rem 0; min-height: 350px;">
             
-            <div class="about-card-image" style="width: 480px; height: 302px; max-width: 80vw; cursor: pointer; position: relative; z-index: 10000;" 
+            <div class="about-card-image" style="width: 480px; height: 302px; max-width: 80vw; cursor: pointer; position: relative; z-index: 10;" 
                  onclick="document.getElementById('hero').scrollIntoView({behavior: 'smooth'})"
                  title="Click to edit card">
             </div>
@@ -580,8 +614,10 @@
 
                     <div class="tax-note">All taxes included</div>
 
-                    <button class="checkout-btn" onclick="proceedToCheckout()">
-                        Proceed to Checkout
+                    <button class="checkout-btn lux-primary-btn" id="checkoutBtn" onclick="proceedToCheckout()">
+                        <div class="lux-sheen"></div>
+                        <span class="lux-text">Proceed to Checkout</span>
+                        <span class="lux-arrow">→</span>
                     </button>
 
                     <div class="security-badges">
@@ -609,36 +645,204 @@
    
 
     <!-- Luxury Footer -->
-    <footer class="lux-footer">
-        <div class="footer-inner">
-            <div class="footer-logo">CARDEL</div>
+<footer class="lux-footer">
+    <div class="footer-inner">
 
-            <nav class="footer-nav">
-                <a href="#hero">DESIGN</a>
-                <a href="#materials">MATERIALS</a>
-                <a href="#atelier">ATELIER</a>
-                <a href="#order">ORDER</a>
-                <a href="#help">HELP</a>
-            </nav>
-
-            <div class="footer-social">
-                <a href="#" aria-label="Instagram">Instagram</a>
-                <a href="#" aria-label="Facebook">Facebook</a>
-                <a href="#" aria-label="Pinterest">Pinterest</a>
-            </div>
+        <!-- Logo Image -->
+        <div class="footer-logo">
+            <img src="image/Untitled designs (16).png" alt="Cardel Logo">
         </div>
-    </footer>
-    <script src="shared.js"></script>
+
+        <nav class="footer-nav">
+           <a href="#" data-target="hero">Design</a>
+        <a href="#" data-target="steps-section">Steps</a>
+        <a href="#" data-target="about-section">About</a>
+        <a href="materials.html" onclick="saveToStorage()">Next</a>
+        <a href="#" data-target="contact-section">Contact</a>
+  
+        </nav>
+
+        <div class="footer-social">
+            <a href="#" aria-label="Instagram">Instagram</a>
+            <a href="#" aria-label="Facebook">Facebook</a>
+            <a href="#" aria-label="Pinterest">Pinterest</a>
+        </div>
+
+    </div>
+</footer>
     <script>
-        window.addEventListener('load', function() {
+      function toggleSiteMobileMenu() {
+        const open = !document.body.classList.contains('site-mobile-menu-open')
+        const backdrop = document.querySelector('.site-mobile-menu-backdrop')
+        const drawer = document.querySelector('.site-mobile-menu-drawer')
+        if (backdrop) backdrop.hidden = !open
+        if (drawer) drawer.hidden = !open
+        document.body.classList.toggle('site-mobile-menu-open', open)
+      }
+      function closeSiteMobileMenu() {
+        const backdrop = document.querySelector('.site-mobile-menu-backdrop')
+        const drawer = document.querySelector('.site-mobile-menu-drawer')
+        if (backdrop) backdrop.hidden = true
+        if (drawer) drawer.hidden = true
+        document.body.classList.remove('site-mobile-menu-open')
+      }
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSiteMobileMenu() })
+    </script>
+    <script>
+    // ===== LUXURY BUTTON INTERACTION ENGINE =====
+    // Applies to all .lux-primary-btn elements on this page
+    // Effects: Magnetic pull · Liquid sheen · Click spring-back · Arrow slide
+
+    (function initLuxButtons() {
+      'use strict'
+
+      // Wait for GSAP to be ready
+      function setupLuxButtons() {
+        if (typeof gsap === 'undefined') {
+          requestAnimationFrame(setupLuxButtons)
+          return
+        }
+
+        const buttons = document.querySelectorAll('.lux-primary-btn')
+        if (!buttons.length) return
+
+        buttons.forEach(function(btn) {
+          const sheen = btn.querySelector('.lux-sheen')
+          const arrow = btn.querySelector('.lux-arrow')
+          const textEl = btn.querySelector('.lux-text')
+
+          // Clamp magnetic pull strength
+          const MAGNETIC_STRENGTH = 0.38
+          const MAGNETIC_RADIUS = 90 // px — distance at which magnet kicks in
+
+          // ── 1. Magnetic Hover (mouse proximity pull) ──
+          function onMouseMove(e) {
+            const rect = btn.getBoundingClientRect()
+            const cx = rect.left + rect.width / 2
+            const cy = rect.top + rect.height / 2
+            const dx = e.clientX - cx
+            const dy = e.clientY - cy
+            const dist = Math.sqrt(dx * dx + dy * dy)
+
+            if (dist < MAGNETIC_RADIUS) {
+              const factor = (1 - dist / MAGNETIC_RADIUS) * MAGNETIC_STRENGTH
+              gsap.to(btn, {
+                x: dx * factor,
+                y: dy * factor,
+                duration: 0.4,
+                ease: 'power2.out',
+                overwrite: 'auto'
+              })
+            } else {
+              gsap.to(btn, {
+                x: 0,
+                y: 0,
+                duration: 0.6,
+                ease: 'power2.out',
+                overwrite: 'auto'
+              })
+            }
+          }
+
+          document.addEventListener('mousemove', onMouseMove)
+
+          // ── 2. Liquid sheen on mouseenter (entry-point aware) ──
+          btn.addEventListener('mouseenter', function(e) {
+            if (!sheen) return
+            const rect = btn.getBoundingClientRect()
+            // Where did the mouse enter from? Map 0→1 horizontally
+            const entryX = (e.clientX - rect.left) / rect.width
+
+            // Position sheen start at entry point, sweeping right
+            const startPct = (entryX * 100 - 80) + '%'
+            gsap.set(sheen, { left: startPct, opacity: 1 })
+            gsap.to(sheen, {
+              left: '130%',
+              duration: 0.72,
+              ease: 'power2.inOut',
+              onComplete: function() {
+                gsap.set(sheen, { left: '-130%', opacity: 0 })
+              }
+            })
+
+            // ── 4. Arrow slide right ──
+            if (arrow) {
+              gsap.to(arrow, {
+                x: 4,
+                duration: 0.4,
+                ease: 'power2.inOut'
+              })
+            }
+          })
+
+          // Return arrow on mouse leave + magnetic snap back
+          btn.addEventListener('mouseleave', function() {
+            if (arrow) {
+              gsap.to(arrow, {
+                x: 0,
+                duration: 0.4,
+                ease: 'power2.inOut'
+              })
+            }
+            // Snap magnet back
+            gsap.to(btn, {
+              x: 0,
+              y: 0,
+              duration: 0.6,
+              ease: 'elastic.out(1, 0.5)'
+            })
+          })
+
+          // ── 3. Click press — scale 0.96 + tighten shadow, elastic spring-back ──
+          btn.addEventListener('mousedown', function() {
+            gsap.killTweensOf(btn, 'scale')
+            gsap.to(btn, {
+              scale: 0.96,
+              duration: 0.12,
+              ease: 'power2.inOut',
+              overwrite: 'auto'
+            })
+          })
+
+          btn.addEventListener('mouseup', function() {
+            gsap.to(btn, {
+              scale: 1,
+              duration: 0.7,
+              ease: 'elastic.out(1.2, 0.45)',
+              overwrite: 'auto'
+            })
+          })
+
+          // Safety: if mouse leaves while pressed, snap back
+          btn.addEventListener('mouseleave', function() {
+            gsap.to(btn, {
+              scale: 1,
+              duration: 0.5,
+              ease: 'elastic.out(1, 0.5)',
+              overwrite: 'auto'
+            })
+          })
+        })
+      }
+
+      // Init after DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupLuxButtons)
+      } else {
+        setupLuxButtons()
+      }
+    })()
+    </script>
+    <script src="shared.js?v=4.0"></script>
+    <script>
+        window.addEventListener('load', function () {
             // Only use smooth scrolling on non-touch or devices that support it well
             const lenis = new Lenis({
-                duration: 1.4,
-                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                lerp: 0.05, // Smoother linear interpolation for enhanced weight and fluidity
                 orientation: 'vertical',
                 gestureOrientation: 'vertical',
                 smoothWheel: true,
-                wheelMultiplier: 0.9,
+                wheelMultiplier: 0.9, 
                 smoothTouch: false,
             });
 
@@ -646,13 +850,13 @@
             document.documentElement.classList.add('lenis');
 
             // Sync GSAP ScrollTrigger with Lenis
-            lenis.on('scroll', function(e) {
+            lenis.on('scroll', function (e) {
                 if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.update();
             });
 
             // Drive Lenis via GSAP's ticker for perfect frame sync
             if (typeof gsap !== 'undefined') {
-                gsap.ticker.add(function(time) {
+                gsap.ticker.add(function (time) {
                     lenis.raf(time * 1000);
                 });
                 gsap.ticker.lagSmoothing(0);
@@ -666,5 +870,52 @@
             }
         });
     </script>
+    <script>
+        document.querySelectorAll('a[data-target]').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('data-target');
+                const target = document.getElementById(targetId);
+
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // Smooth scroll on click (same page)
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Smooth scroll if user arrives with hash from another page
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash;
+            if (hash) {
+                const target = document.querySelector(hash);
+                if (target) {
+                    // small delay to ensure page fully loads
+                    setTimeout(() => {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }, 50);
+                }
+            }
+        });
+    </script>
+
+
+    <div id="toast" class="toast"></div>
 </body>
 </html>
